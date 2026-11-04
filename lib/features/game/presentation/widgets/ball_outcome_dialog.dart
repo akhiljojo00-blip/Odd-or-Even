@@ -27,7 +27,7 @@ class BallOutcomeDialog extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 28),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: GameColors.surface.withOpacity(0.96),
+          color: GameColors.surface.withValues(alpha: 0.96),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
             color: isWicket ? GameColors.wicket : GameColors.emerald,
@@ -35,7 +35,7 @@ class BallOutcomeDialog extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: (isWicket ? GameColors.wicket : GameColors.emerald).withOpacity(0.35),
+              color: (isWicket ? GameColors.wicket : GameColors.emerald).withValues(alpha: 0.35),
               blurRadius: 28,
               offset: const Offset(0, 10),
             ),
@@ -48,7 +48,7 @@ class BallOutcomeDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
-                color: (isWicket ? GameColors.wicket : GameColors.emerald).withOpacity(0.2),
+                color: (isWicket ? GameColors.wicket : GameColors.emerald).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -145,7 +145,7 @@ class BallOutcomeDialog extends StatelessWidget {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: accentColor.withOpacity(0.15),
+            color: accentColor.withValues(alpha: 0.15),
             shape: BoxShape.circle,
             border: Border.all(color: accentColor, width: 2),
           ),

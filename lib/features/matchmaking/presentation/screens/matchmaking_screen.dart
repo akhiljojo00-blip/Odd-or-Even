@@ -147,7 +147,7 @@ class _MatchmakingScreenState extends ConsumerState<MatchmakingScreen>
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: GameColors.lime.withOpacity(1.0 - _animController.value),
+                                color: GameColors.lime.withValues(alpha: 1.0 - _animController.value),
                                 width: 2,
                               ),
                             ),
@@ -163,7 +163,7 @@ class _MatchmakingScreenState extends ConsumerState<MatchmakingScreen>
                           border: Border.all(color: GameColors.lime, width: 2),
                           boxShadow: [
                             BoxShadow(
-                              color: GameColors.lime.withOpacity(0.3),
+                              color: GameColors.lime.withValues(alpha: 0.3),
                               blurRadius: 24,
                               spreadRadius: 4,
                             ),

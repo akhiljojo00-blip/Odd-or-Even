@@ -34,12 +34,12 @@ class OfflineResultScreen extends ConsumerWidget {
                   width: 90,
                   height: 90,
                   decoration: BoxDecoration(
-                    color: GameColors.gold.withOpacity(0.15),
+                    color: GameColors.gold.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                     border: Border.all(color: GameColors.gold, width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: GameColors.gold.withOpacity(0.3),
+                        color: GameColors.gold.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 6),
                       ),
@@ -125,7 +125,7 @@ class OfflineResultScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: GameColors.surfaceElevated.withOpacity(0.5),
+                  color: GameColors.surfaceElevated.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: GameColors.glassBorder),
                 ),
@@ -148,7 +148,7 @@ class OfflineResultScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
-                        color: GameColors.gold.withOpacity(0.2),
+                        color: GameColors.gold.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(

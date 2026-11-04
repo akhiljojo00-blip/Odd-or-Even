@@ -27,7 +27,7 @@ class PlayerIdentityBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: GameColors.surface.withOpacity(0.85),
+        color: GameColors.surface.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isMyTurn ? playerColor : GameColors.glassBorder,
@@ -39,7 +39,7 @@ class PlayerIdentityBadge extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: playerColor.withOpacity(0.2),
+            backgroundColor: playerColor.withValues(alpha: 0.2),
             child: Text(
               player.name.isNotEmpty ? player.name[0].toUpperCase() : '?',
               style: GameTypography.headlineMedium.copyWith(
@@ -67,7 +67,7 @@ class PlayerIdentityBadge extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: playerColor.withOpacity(0.25),
+                        color: playerColor.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(

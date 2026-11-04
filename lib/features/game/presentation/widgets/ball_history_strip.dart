@@ -30,7 +30,7 @@ class BallHistoryStrip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: balls.length,
         reverse: true, // Show most recent balls on the right / latest first
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final ball = balls[balls.length - 1 - index];
           return _buildBallBubble(ball);
@@ -60,7 +60,7 @@ class BallHistoryStrip extends StatelessWidget {
       textColor = Colors.white;
       label = '$runs';
     } else {
-      bgColor = GameColors.lime.withOpacity(0.2);
+      bgColor = GameColors.lime.withValues(alpha: 0.2);
       textColor = GameColors.lime;
       label = '$runs';
     }

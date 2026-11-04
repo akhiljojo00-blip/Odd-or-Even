@@ -129,8 +129,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: GameColors.lime,
-            activeTrackColor: GameColors.lime.withOpacity(0.3),
+            activeThumbColor: GameColors.lime,
+            activeTrackColor: GameColors.lime.withValues(alpha: 0.3),
           ),
         ],
       ),

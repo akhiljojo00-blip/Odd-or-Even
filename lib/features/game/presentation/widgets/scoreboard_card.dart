@@ -35,15 +35,15 @@ class ScoreboardCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            GameColors.surfaceElevated.withOpacity(0.8),
-            GameColors.surface.withOpacity(0.9),
+            GameColors.surfaceElevated.withValues(alpha: 0.8),
+            GameColors.surface.withValues(alpha: 0.9),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: GameColors.glassBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -58,9 +58,9 @@ class ScoreboardCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: GameColors.emerald.withOpacity(0.2),
+                  color: GameColors.emerald.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: GameColors.emerald.withOpacity(0.5)),
+                  border: Border.all(color: GameColors.emerald.withValues(alpha: 0.5)),
                 ),
                 child: Text(
                   inningsNo == 1 ? '1ST INNINGS' : '2ND INNINGS (CHASE)',
@@ -119,9 +119,9 @@ class ScoreboardCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: GameColors.gold.withOpacity(0.15),
+                color: GameColors.gold.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: GameColors.gold.withOpacity(0.4)),
+                border: Border.all(color: GameColors.gold.withValues(alpha: 0.4)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

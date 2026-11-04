@@ -85,7 +85,7 @@ class _OfflineGameplayScreenState extends ConsumerState<OfflineGameplayScreen> {
             // 3. Ball outcome dialog overlay
             if (offlineState.showBallOutcomeOverlay && match.lastBallEvent != null)
               Container(
-                color: Colors.black.withOpacity(0.75),
+                color: Colors.black.withValues(alpha: 0.75),
                 child: BallOutcomeDialog(
                   ballEvent: match.lastBallEvent!,
                   batterName: match.getPlayerById(match.lastBallEvent!.batterId).name,
@@ -347,8 +347,8 @@ class _OfflineGameplayScreenState extends ConsumerState<OfflineGameplayScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: isBatterTurn
-                ? GameColors.lime.withOpacity(0.15)
-                : GameColors.amber.withOpacity(0.15),
+                ? GameColors.lime.withValues(alpha: 0.15)
+                : GameColors.amber.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isBatterTurn ? GameColors.lime : GameColors.amber,
@@ -444,7 +444,7 @@ class _OfflineGameplayScreenState extends ConsumerState<OfflineGameplayScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                  color: GameColors.lime.withOpacity(0.15),
+                  color: GameColors.lime.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(

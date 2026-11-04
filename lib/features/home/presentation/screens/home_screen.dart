@@ -24,9 +24,9 @@ class HomeScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: GameColors.lime.withOpacity(0.15),
+                      color: GameColors.lime.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: GameColors.lime.withOpacity(0.3)),
+                      border: Border.all(color: GameColors.lime.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
@@ -174,7 +174,7 @@ class HomeScreen extends StatelessWidget {
           border: Border.all(color: GameColors.glassBorder),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -186,9 +186,9 @@ class HomeScreen extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.15),
+                color: accentColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: accentColor.withOpacity(0.4)),
+                border: Border.all(color: accentColor.withValues(alpha: 0.4)),
               ),
               child: Icon(icon, color: accentColor, size: 28),
             ),
@@ -210,7 +210,7 @@ class HomeScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: accentColor.withOpacity(0.2),
+                          color: accentColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(

@@ -145,7 +145,7 @@ class _OfflineSetupScreenState extends ConsumerState<OfflineSetupScreen> {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: GameColors.player1.withOpacity(0.5)),
+                borderSide: BorderSide(color: GameColors.player1.withValues(alpha: 0.5)),
               ),
             ),
           ),
@@ -165,7 +165,7 @@ class _OfflineSetupScreenState extends ConsumerState<OfflineSetupScreen> {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: GameColors.player2.withOpacity(0.5)),
+                borderSide: BorderSide(color: GameColors.player2.withValues(alpha: 0.5)),
               ),
             ),
           ),
@@ -284,7 +284,7 @@ class _OfflineSetupScreenState extends ConsumerState<OfflineSetupScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? GameColors.lime.withOpacity(0.15) : GameColors.surface,
+          color: isSelected ? GameColors.lime.withValues(alpha: 0.15) : GameColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? GameColors.lime : GameColors.glassBorder,

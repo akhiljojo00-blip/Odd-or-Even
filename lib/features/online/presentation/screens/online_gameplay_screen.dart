@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
 import '../../../../core/utils/haptics_util.dart';
@@ -28,7 +29,10 @@ class OnlineGameplayScreen extends ConsumerStatefulWidget {
 }
 
 class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
+  late final SupabaseMatchRepository _repo;
   Timer? _syncTimer;
+  RealtimeChannel? _realtimeChannel;
+  bool _isRealtimeConnected = false;
   GameMatchState? _match;
   bool _isLoading = true;
   bool _hasSubmittedThisTurn = false;
@@ -40,26 +44,47 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
   @override
   void initState() {
     super.initState();
+    _repo = ref.read(supabaseMatchRepositoryProvider);
     _initMatch();
   }
 
   @override
   void dispose() {
     _syncTimer?.cancel();
+    _repo.unsubscribeChannel(_realtimeChannel);
     super.dispose();
   }
 
   Future<void> _initMatch() async {
-    final repo = ref.read(supabaseMatchRepositoryProvider);
-    _currentUserId = repo.currentUserId ?? await repo.ensureAuthenticatedUser();
+    _currentUserId = _repo.currentUserId ?? await _repo.ensureAuthenticatedUser();
 
     await _fetchLatestState();
-    _syncTimer = Timer.periodic(const Duration(seconds: 2), (_) => _fetchLatestState());
+
+    // Subscribe to instant Supabase Realtime channel
+    if (_repo.isConfigured) {
+      _realtimeChannel = _repo.subscribeToMatchChannel(
+        matchId: widget.matchId,
+        onStateChange: () {
+          if (mounted) {
+            _fetchLatestState();
+          }
+        },
+        onStatusChange: (status) {
+          if (mounted) {
+            setState(() {
+              _isRealtimeConnected = status == RealtimeSubscribeStatus.subscribed;
+            });
+          }
+        },
+      );
+    }
+
+    // Gentle HTTP polling fallback (keeps authoritative state synchronized during network drops)
+    _syncTimer = Timer.periodic(const Duration(seconds: 4), (_) => _fetchLatestState());
   }
 
   Future<void> _fetchLatestState() async {
-    final repo = ref.read(supabaseMatchRepositoryProvider);
-    final match = await repo.getMatch(widget.matchId);
+    final match = await _repo.getMatch(widget.matchId);
     if (!mounted || match == null) return;
 
     // Check if new ball was resolved
@@ -83,7 +108,6 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
     final match = _match;
     if (match == null || _hasSubmittedThisTurn) return;
 
-    final repo = ref.read(supabaseMatchRepositoryProvider);
     final turnType = match.phase == MatchPhase.tossInput ? 'toss' : 'ball';
 
     setState(() {
@@ -92,7 +116,7 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
     });
     HapticsUtil.mediumTap();
 
-    final res = await repo.submitChoice(
+    final res = await _repo.submitChoice(
       matchId: widget.matchId,
       turnType: turnType,
       choice: choice,
@@ -104,9 +128,8 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
   }
 
   Future<void> _handleRoleSelection(CricketRole role) async {
-    final repo = ref.read(supabaseMatchRepositoryProvider);
     HapticsUtil.mediumTap();
-    await repo.selectRole(
+    await _repo.selectRole(
       matchId: widget.matchId,
       role: role.name,
     );
@@ -114,16 +137,14 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
   }
 
   Future<void> _handleStartSecondInnings() async {
-    final repo = ref.read(supabaseMatchRepositoryProvider);
     HapticsUtil.mediumTap();
-    await repo.startSecondInnings(widget.matchId);
+    await _repo.startSecondInnings(widget.matchId);
     await _fetchLatestState();
   }
 
   Future<void> _handleRematch() async {
-    final repo = ref.read(supabaseMatchRepositoryProvider);
     HapticsUtil.mediumTap();
-    final res = await repo.requestRematch(widget.matchId);
+    final res = await _repo.requestRematch(widget.matchId);
     if (res != null && res['match_id'] != null) {
       final newMatchId = res['match_id'] as String;
       _syncTimer?.cancel();
@@ -137,8 +158,7 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
     final match = _match;
     if (match == null) return;
     final opponent = match.getOpponentOf(_currentUserId ?? match.player1.id);
-    final repo = ref.read(supabaseMatchRepositoryProvider);
-    await repo.claimTimeout(
+    await _repo.claimTimeout(
       matchId: widget.matchId,
       timedOutUserId: opponent.id,
     );
@@ -146,8 +166,7 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
   }
 
   Future<void> _handleForfeit() async {
-    final repo = ref.read(supabaseMatchRepositoryProvider);
-    await repo.forfeitMatch(widget.matchId);
+    await _repo.forfeitMatch(widget.matchId);
     await _fetchLatestState();
   }
 
@@ -176,7 +195,24 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('LIVE MULTIPLAYER', style: GameTypography.headlineMedium),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _isRealtimeConnected ? GameColors.lime : GameColors.amber,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _isRealtimeConnected ? 'LIVE MULTIPLAYER' : 'SYNCING DUEL',
+              style: GameTypography.headlineMedium,
+            ),
+          ],
+        ),
         centerTitle: true,
         actions: [
           IconButton(
@@ -199,7 +235,7 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
             // Ball Outcome Overlay
             if (_showBallOutcome && match.ballHistory.isNotEmpty)
               Container(
-                color: Colors.black.withOpacity(0.8),
+                color: Colors.black.withValues(alpha: 0.8),
                 child: BallOutcomeDialog(
                   ballEvent: match.ballHistory.last,
                   batterName: match.getPlayerById(match.ballHistory.last.batterId).name,
@@ -407,7 +443,9 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isBatter ? GameColors.lime.withOpacity(0.15) : GameColors.amber.withOpacity(0.15),
+            color: isBatter
+                ? GameColors.lime.withValues(alpha: 0.15)
+                : GameColors.amber.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: isBatter ? GameColors.lime : GameColors.amber),
           ),
@@ -491,7 +529,7 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                  color: GameColors.lime.withOpacity(0.15),
+                  color: GameColors.lime.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text('TARGET: ${match.targetRuns} RUNS', style: GameTypography.displayMedium.copyWith(fontSize: 22, color: GameColors.lime)),
@@ -529,7 +567,7 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
                   width: 90,
                   height: 90,
                   decoration: BoxDecoration(
-                    color: (isMeWinner ? GameColors.gold : GameColors.surfaceElevated).withOpacity(0.2),
+                    color: (isMeWinner ? GameColors.gold : GameColors.surfaceElevated).withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                     border: Border.all(color: isMeWinner ? GameColors.gold : GameColors.textMuted, width: 2),
                   ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
 import '../../../../core/utils/haptics_util.dart';
@@ -27,7 +28,9 @@ class RoomScreen extends ConsumerStatefulWidget {
 }
 
 class _RoomScreenState extends ConsumerState<RoomScreen> {
+  late final SupabaseMatchRepository _repo;
   Timer? _pollTimer;
+  RealtimeChannel? _roomChannel;
   MatchConfig _config = const MatchConfig();
   bool _hostConfirmed = false;
   bool _guestConfirmed = false;
@@ -37,24 +40,33 @@ class _RoomScreenState extends ConsumerState<RoomScreen> {
   @override
   void initState() {
     super.initState();
-    _startPolling();
+    _repo = ref.read(supabaseMatchRepositoryProvider);
+    _startSync();
   }
 
   @override
   void dispose() {
     _pollTimer?.cancel();
+    _repo.unsubscribeChannel(_roomChannel);
     super.dispose();
   }
 
-  void _startPolling() {
-    _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) => _checkRoomStatus());
+  void _startSync() {
+    if (_repo.isConfigured) {
+      _roomChannel = _repo.subscribeToRoomChannel(
+        roomId: widget.roomId,
+        onRoomUpdated: () {
+          if (mounted) _checkRoomStatus();
+        },
+      );
+    }
+    _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) => _checkRoomStatus());
   }
 
   Future<void> _checkRoomStatus() async {
-    final repo = ref.read(supabaseMatchRepositoryProvider);
-    if (!repo.isConfigured) return;
+    if (!_repo.isConfigured) return;
 
-    final room = await repo.getRoom(widget.roomId);
+    final room = await _repo.getRoom(widget.roomId);
     if (room == null || !mounted) return;
 
     final activeMatchId = room['active_match_id'] as String?;
@@ -132,10 +144,10 @@ class _RoomScreenState extends ConsumerState<RoomScreen> {
                 decoration: BoxDecoration(
                   color: GameColors.surface,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: GameColors.lime.withOpacity(0.5)),
+                  border: Border.all(color: GameColors.lime.withValues(alpha: 0.5)),
                   boxShadow: [
                     BoxShadow(
-                      color: GameColors.lime.withOpacity(0.1),
+                      color: GameColors.lime.withValues(alpha: 0.1),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -341,7 +353,7 @@ class _RoomScreenState extends ConsumerState<RoomScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: isConfirmed ? GameColors.lime.withOpacity(0.2) : GameColors.surfaceElevated,
+              color: isConfirmed ? GameColors.lime.withValues(alpha: 0.2) : GameColors.surfaceElevated,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(

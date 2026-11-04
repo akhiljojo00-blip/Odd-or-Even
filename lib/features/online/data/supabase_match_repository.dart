@@ -327,6 +327,98 @@ class SupabaseMatchRepository {
       debugPrint('Error updating profile: $e');
     }
   }
+
+  /// Subscribes to realtime Postgres updates for an active match.
+  /// Notifies `onStateChange` instantly whenever the match record or new ball event is broadcast.
+  RealtimeChannel? subscribeToMatchChannel({
+    required String matchId,
+    required VoidCallback onStateChange,
+    void Function(RealtimeSubscribeStatus status)? onStatusChange,
+  }) {
+    final client = _client;
+    if (client == null) return null;
+
+    try {
+      final channel = client.channel('match_channel:$matchId');
+      channel
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'matches',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'id',
+              value: matchId,
+            ),
+            callback: (payload) {
+              onStateChange();
+            },
+          )
+          .onPostgresChanges(
+            event: PostgresChangeEvent.insert,
+            schema: 'public',
+            table: 'ball_events',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'match_id',
+              value: matchId,
+            ),
+            callback: (payload) {
+              onStateChange();
+            },
+          )
+          .subscribe((status, [error]) {
+            if (onStatusChange != null) {
+              onStatusChange(status);
+            }
+          });
+      return channel;
+    } catch (e) {
+      debugPrint('Error subscribing to match realtime channel: $e');
+      return null;
+    }
+  }
+
+  /// Subscribes to realtime room status and configuration updates.
+  RealtimeChannel? subscribeToRoomChannel({
+    required String roomId,
+    required VoidCallback onRoomUpdated,
+  }) {
+    final client = _client;
+    if (client == null) return null;
+
+    try {
+      final channel = client.channel('room_channel:$roomId');
+      channel
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'game_rooms',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'id',
+              value: roomId,
+            ),
+            callback: (_) => onRoomUpdated(),
+          )
+          .subscribe();
+      return channel;
+    } catch (e) {
+      debugPrint('Error subscribing to room realtime channel: $e');
+      return null;
+    }
+  }
+
+  /// Safely removes/unsubscribes a realtime channel.
+  Future<void> unsubscribeChannel(RealtimeChannel? channel) async {
+    final client = _client;
+    if (client == null || channel == null) return;
+    try {
+      await client.removeChannel(channel);
+    } catch (e) {
+      debugPrint('Error removing realtime channel: $e');
+    }
+  }
 }
 
 final supabaseMatchRepositoryProvider = Provider<SupabaseMatchRepository>((ref) {

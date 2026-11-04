@@ -28,7 +28,7 @@ class OfflinePrivacyHandoffScreen extends StatelessWidget {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: GameColors.lime.withOpacity(0.15),
+                  color: GameColors.lime.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                   border: Border.all(color: GameColors.lime, width: 2),
                 ),

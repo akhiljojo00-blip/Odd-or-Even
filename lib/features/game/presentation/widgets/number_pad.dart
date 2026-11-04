@@ -142,7 +142,7 @@ class _NumberPadState extends State<NumberPad> {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: GameColors.lime.withOpacity(0.4),
+                          color: GameColors.lime.withValues(alpha: 0.4),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
