@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
+import '../../../game/domain/models/match_config.dart';
 import '../../data/supabase_match_repository.dart';
 
 class OnlineLobbyScreen extends ConsumerStatefulWidget {
@@ -17,7 +18,6 @@ class _OnlineLobbyScreenState extends ConsumerState<OnlineLobbyScreen>
   late TabController _tabController;
   final _roomCodeController = TextEditingController();
   bool _isLoading = false;
-  String? _createdRoomCode;
 
   @override
   void initState() {
@@ -40,17 +40,23 @@ class _OnlineLobbyScreenState extends ConsumerState<OnlineLobbyScreen>
     }
 
     setState(() => _isLoading = true);
-    // Authenticate
     await repo.ensureAuthenticatedUser();
-    // Simulate or invoke RPC
-    setState(() {
-      _isLoading = false;
-      _createdRoomCode = 'OE${(1000 + (DateTime.now().millisecond * 9) % 9000).toInt()}';
-    });
+    final res = await repo.createRoom(const MatchConfig());
+    setState(() => _isLoading = false);
+
+    if (res != null && mounted) {
+      final roomId = res['room_id'] as String;
+      final roomCode = res['room_code'] as String;
+      context.push('/room/$roomId?code=$roomCode&isHost=true');
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to create room. Please try again.')),
+      );
+    }
   }
 
   Future<void> _handleJoinRoom() async {
-    final code = _roomCodeController.text.trim();
+    final code = _roomCodeController.text.trim().toUpperCase();
     if (code.length < 4) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid room code')),
@@ -71,12 +77,11 @@ class _OnlineLobbyScreenState extends ConsumerState<OnlineLobbyScreen>
     if (!mounted) return;
 
     if (res != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Joined room $code successfully!')),
-      );
+      final roomId = res['room_id'] as String;
+      context.push('/room/$roomId?code=$code&isHost=false');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not find room or room expired')),
+        const SnackBar(content: Text('Could not find room or room is full/expired')),
       );
     }
   }
@@ -166,48 +171,6 @@ class _OnlineLobbyScreenState extends ConsumerState<OnlineLobbyScreen>
   }
 
   Widget _buildCreateRoomTab() {
-    if (_createdRoomCode != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Container(
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              color: GameColors.surface,
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: GameColors.lime),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.share_rounded, size: 48, color: GameColors.lime),
-                const SizedBox(height: 16),
-                Text('ROOM CODE CREATED', style: GameTypography.caption.copyWith(letterSpacing: 1.5)),
-                const SizedBox(height: 8),
-                Text(
-                  _createdRoomCode!,
-                  style: GameTypography.displayLarge.copyWith(
-                    letterSpacing: 4.0,
-                    color: GameColors.lime,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Share this 6-character code with your opponent to duel.',
-                  textAlign: TextAlign.center,
-                  style: GameTypography.bodyMedium,
-                ),
-                const SizedBox(height: 24),
-                const CircularProgressIndicator(color: GameColors.lime),
-                const SizedBox(height: 12),
-                Text('Waiting for player to join...', style: GameTypography.caption),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       child: Column(

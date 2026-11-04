@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:odd_or_even/features/game/domain/engine/odd_or_even_engine.dart';
 import 'package:odd_or_even/features/game/domain/models/game_enums.dart';
+import 'package:odd_or_even/features/game/domain/models/game_match_state.dart';
 import 'package:odd_or_even/features/game/domain/models/match_config.dart';
 import 'package:odd_or_even/features/game/domain/models/player_info.dart';
 
@@ -275,7 +276,7 @@ void main() {
       expect(timeoutState.player1.timeoutPoints, 0);
     });
 
-    test('Rematch resets match state while preserving series score', () {
+    test('Rematch resets match state and timeout points while preserving series score', () {
       var state = OddOrEvenEngine.initializeMatch(
         config: config,
         player1: playerA.copyWith(seriesScore: 1, timeoutPoints: 1),
@@ -293,11 +294,114 @@ void main() {
       expect(rematch.matchId, isNot(equals(state.matchId)));
       expect(rematch.player1.seriesScore, 1);
       expect(rematch.player2.seriesScore, 0);
-      expect(rematch.player1.timeoutPoints, 1);
-      expect(rematch.player2.timeoutPoints, 2);
+      expect(rematch.player1.timeoutPoints, 0); // Correctly reset for fresh match
+      expect(rematch.player2.timeoutPoints, 0);
       expect(rematch.firstInningsRuns, 0);
       expect(rematch.targetRuns, isNull);
       expect(rematch.winnerId, isNull);
+    });
+
+    test('First innings completes when configured overs limit is reached', () {
+      // 1 over = 6 legal balls
+      var state = OddOrEvenEngine.initializeMatch(
+        config: const MatchConfig(overs: 1),
+        player1: playerA,
+        player2: playerB,
+      );
+      state = state.copyWith(
+        phase: MatchPhase.firstInnings,
+        currentBatterId: 'p1',
+        currentBowlerId: 'p2',
+        currentInningsNo: 1,
+        currentInningsRuns: 15,
+        legalBallsBowled: 5, // Ball 6 incoming
+      );
+
+      // Ball 6 bowled: batter scores 4 without wicket
+      final ball6State = OddOrEvenEngine.resolveBall(
+        state: state,
+        batterChoice: 4,
+        bowlerChoice: 2,
+      );
+      expect(ball6State.phase, MatchPhase.inningsBreak);
+      expect(ball6State.firstInningsRuns, 19);
+      expect(ball6State.targetRuns, 20);
+      expect(ball6State.legalBallsBowled, 6);
+    });
+
+    test('Second innings ends when configured overs limit is reached without hitting target', () {
+      // 1 over = 6 balls, chaser scores 12 but target is 15 -> Defender wins
+      var state = OddOrEvenEngine.initializeMatch(
+        config: const MatchConfig(overs: 1, seriesTargetPoints: 2),
+        player1: playerA,
+        player2: playerB,
+      );
+      state = state.copyWith(
+        phase: MatchPhase.secondInnings,
+        currentBatterId: 'p2',
+        currentBowlerId: 'p1',
+        currentInningsNo: 2,
+        firstInningsRuns: 14,
+        targetRuns: 15,
+        currentInningsRuns: 10,
+        legalBallsBowled: 5, // Ball 6 incoming
+      );
+
+      // Ball 6: Batter scores 2 -> total 12 (< target 15) -> defender p1 wins!
+      final endState = OddOrEvenEngine.resolveBall(
+        state: state,
+        batterChoice: 2,
+        bowlerChoice: 1,
+      );
+      expect(endState.phase, MatchPhase.matchFinished);
+      expect(endState.winnerId, 'p1');
+      expect(endState.resultType, MatchResultType.defenderWon);
+      expect(endState.player1.seriesScore, 1);
+    });
+
+    test('Player forfeit awards victory to opponent and updates series score', () {
+      final state = OddOrEvenEngine.initializeMatch(
+        config: const MatchConfig(seriesTargetPoints: 2),
+        player1: playerA,
+        player2: playerB,
+      );
+
+      // Player 1 forfeits
+      final forfeitState = OddOrEvenEngine.forfeitMatch(
+        state: state,
+        forfeitingPlayerId: 'p1',
+      );
+      expect(forfeitState.phase, MatchPhase.matchFinished);
+      expect(forfeitState.winnerId, 'p2');
+      expect(forfeitState.resultType, MatchResultType.forfeit);
+      expect(forfeitState.player2.seriesScore, 1);
+
+      // Duplicate forfeit has no effect
+      final dupState = OddOrEvenEngine.forfeitMatch(
+        state: forfeitState,
+        forfeitingPlayerId: 'p1',
+      );
+      expect(dupState.phase, MatchPhase.matchFinished);
+      expect(dupState.player2.seriesScore, 1);
+    });
+
+    test('GameMatchState JSON serialization and deserialization roundtrip', () {
+      final state = OddOrEvenEngine.initializeMatch(
+        config: const MatchConfig(overs: 2, decisionTimerSeconds: 15, seriesTargetPoints: 5),
+        player1: playerA.copyWith(parity: Parity.odd, seriesScore: 2, timeoutPoints: 1),
+        player2: playerB.copyWith(parity: Parity.even, seriesScore: 1, timeoutPoints: 0),
+      );
+
+      final jsonMap = state.toJson();
+      final revived = GameMatchState.fromJson(jsonMap);
+
+      expect(revived.matchId, state.matchId);
+      expect(revived.phase, state.phase);
+      expect(revived.config.overs, 2);
+      expect(revived.config.decisionTimerSeconds, 15);
+      expect(revived.player1.parity, state.player1.parity);
+      expect(revived.player1.seriesScore, 2);
+      expect(revived.player2.seriesScore, 1);
     });
   });
 }

@@ -29,9 +29,11 @@ class _OfflineGameplayScreenState extends ConsumerState<OfflineGameplayScreen> {
     final offlineState = ref.watch(offlineGameProvider);
     final match = offlineState.match;
 
-    // Check if finished -> navigate to results
-    if (match.phase == MatchPhase.matchFinished ||
-        match.phase == MatchPhase.seriesFinished) {
+    // Check if finished -> navigate to results once ball outcome overlay is dismissed
+    if ((match.phase == MatchPhase.matchFinished ||
+            match.phase == MatchPhase.seriesFinished ||
+            match.phase == MatchPhase.matchForfeited) &&
+        !offlineState.showBallOutcomeOverlay) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.go('/offline-result');
       });

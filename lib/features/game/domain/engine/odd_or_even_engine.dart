@@ -307,6 +307,25 @@ class OddOrEvenEngine {
     return state;
   }
 
+  /// Handles player forfeit (e.g. disconnect grace expiration or abandonment).
+  static GameMatchState forfeitMatch({
+    required GameMatchState state,
+    required String forfeitingPlayerId,
+  }) {
+    if (state.phase == MatchPhase.matchFinished ||
+        state.phase == MatchPhase.seriesFinished ||
+        state.phase == MatchPhase.matchForfeited) {
+      return state;
+    }
+
+    final opponent = state.getOpponentOf(forfeitingPlayerId);
+    return _finalizeMatch(
+      state: state.copyWith(phase: MatchPhase.matchForfeited),
+      winnerId: opponent.id,
+      resultType: MatchResultType.forfeit,
+    );
+  }
+
   /// Prepares a fresh rematch match keeping cumulative series score.
   static GameMatchState initializeRematch({
     required GameMatchState previousState,
@@ -317,8 +336,15 @@ class OddOrEvenEngine {
     final p1Parity = p1IsOdd ? Parity.odd : Parity.even;
     final p2Parity = p1Parity.opposite;
 
-    final updatedP1 = previousState.player1.copyWith(parity: p1Parity);
-    final updatedP2 = previousState.player2.copyWith(parity: p2Parity);
+    // Reset match-level timeout points while preserving seriesScore
+    final updatedP1 = previousState.player1.copyWith(
+      parity: p1Parity,
+      timeoutPoints: 0,
+    );
+    final updatedP2 = previousState.player2.copyWith(
+      parity: p2Parity,
+      timeoutPoints: 0,
+    );
 
     return GameMatchState(
       matchId: _uuid.v4(),

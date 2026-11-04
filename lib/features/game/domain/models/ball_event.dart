@@ -35,15 +35,15 @@ class BallEvent {
 
   factory BallEvent.fromJson(Map<String, dynamic> json) {
     return BallEvent(
-      inningsNo: json['inningsNo'] as int,
-      ballNo: json['ballNo'] as int,
-      batterId: json['batterId'] as String,
-      bowlerId: json['bowlerId'] as String,
-      batterNumber: json['batterNumber'] as int,
-      bowlerNumber: json['bowlerNumber'] as int,
-      runsScored: json['runsScored'] as int,
-      isWicket: json['isWicket'] as bool,
-      cumulativeRuns: json['cumulativeRuns'] as int,
+      inningsNo: (json['inningsNo'] ?? json['innings_no']) as int,
+      ballNo: (json['ballNo'] ?? json['ball_no']) as int,
+      batterId: (json['batterId'] ?? json['batter_id']) as String,
+      bowlerId: (json['bowlerId'] ?? json['bowler_id']) as String,
+      batterNumber: (json['batterNumber'] ?? json['batter_number']) as int,
+      bowlerNumber: (json['bowlerNumber'] ?? json['bowler_number']) as int,
+      runsScored: (json['runsScored'] ?? json['runs_scored']) as int,
+      isWicket: (json['isWicket'] ?? json['is_wicket']) as bool,
+      cumulativeRuns: (json['cumulativeRuns'] ?? json['cumulative_runs']) as int,
     );
   }
 }

@@ -39,6 +39,14 @@ enum MatchPhase {
 
   bool get isInningsActive =>
       this == MatchPhase.firstInnings || this == MatchPhase.secondInnings;
+
+  static MatchPhase fromValue(String value) {
+    final normalized = value.replaceAll('_', '').toLowerCase();
+    for (final p in MatchPhase.values) {
+      if (p.name.toLowerCase() == normalized) return p;
+    }
+    return MatchPhase.tossInput;
+  }
 }
 
 enum MatchResultType {
@@ -58,5 +66,15 @@ enum MatchResultType {
       case MatchResultType.forfeit:
         return 'Opponent Forfeited';
     }
+  }
+
+  static MatchResultType? fromValue(String? value) {
+    if (value == null) return null;
+    final normalized = value.replaceAll('_', '').toLowerCase();
+    if (normalized == 'win' || normalized == 'chaserwon') return MatchResultType.chaserWon;
+    if (normalized == 'defenderwon') return MatchResultType.defenderWon;
+    if (normalized == 'tie') return MatchResultType.tie;
+    if (normalized == 'forfeit') return MatchResultType.forfeit;
+    return null;
   }
 }

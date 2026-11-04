@@ -7,6 +7,9 @@ import 'package:odd_or_even/features/game/domain/models/player_info.dart';
 import 'package:odd_or_even/features/game/presentation/widgets/number_pad.dart';
 import 'package:odd_or_even/features/game/presentation/widgets/scoreboard_card.dart';
 import 'package:odd_or_even/features/home/presentation/screens/home_screen.dart';
+import 'package:odd_or_even/features/matchmaking/presentation/screens/matchmaking_screen.dart';
+import 'package:odd_or_even/features/profile/presentation/screens/profile_screen.dart';
+import 'package:odd_or_even/features/rooms/presentation/screens/room_screen.dart';
 
 void main() {
   group('Widget Tests', () {
@@ -82,6 +85,64 @@ void main() {
       expect(find.text('PASS & PLAY'), findsOneWidget);
       expect(find.text('ONLINE ROOMS'), findsOneWidget);
       expect(find.text('QUICK MATCH'), findsOneWidget);
+    });
+
+    testWidgets('MatchmakingScreen renders finding opponent radar and cancel button', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: MatchmakingScreen(),
+          ),
+        ),
+      );
+
+      expect(find.text('FINDING OPPONENT'), findsOneWidget);
+      expect(find.text('CANCEL SEARCH'), findsOneWidget);
+
+      // Cleanly cancel search and dispose timers
+      await tester.tap(find.text('CANCEL SEARCH'));
+      await tester.pump();
+    });
+
+    testWidgets('RoomScreen renders room code and match settings', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: RoomScreen(
+              roomId: 'room-123',
+              roomCode: 'CRIC99',
+              isHost: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('CRIC99'), findsOneWidget);
+      expect(find.text('SHARE ROOM CODE'), findsOneWidget);
+      expect(find.text('HOST (YOU)'), findsOneWidget);
+      expect(find.text('MATCH SETTINGS AGREEMENT'), findsOneWidget);
+      expect(find.text('CONFIRM SETTINGS'), findsOneWidget);
+    });
+
+    testWidgets('ProfileScreen renders career statistics and display name field', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: ProfileScreen(),
+          ),
+        ),
+      );
+
+      // Settle async init
+      await tester.pump();
+
+      expect(find.text('PLAYER PROFILE'), findsOneWidget);
+      expect(find.text('CAREER STATISTICS'), findsOneWidget);
+      expect(find.text('MATCHES'), findsOneWidget);
+      expect(find.text('WINS'), findsOneWidget);
+      expect(find.text('LOSSES'), findsOneWidget);
+      expect(find.text('TIED'), findsOneWidget);
+      expect(find.text('SAVE PROFILE'), findsOneWidget);
     });
   });
 }

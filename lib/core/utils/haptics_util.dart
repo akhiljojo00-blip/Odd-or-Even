@@ -24,6 +24,10 @@ class HapticsUtil {
     } catch (_) {}
   }
 
+  static void heavyImpact() {
+    heavyWicket();
+  }
+
   static void victoryVibrate() {
     if (!enabled) return;
     try {

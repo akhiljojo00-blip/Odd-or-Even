@@ -45,6 +45,13 @@ class HomeScreen extends StatelessWidget {
                   Row(
                     children: [
                       IconButton(
+                        icon: const Icon(Icons.person_outline_rounded, color: GameColors.textSecondary),
+                        onPressed: () {
+                          HapticsUtil.lightTap();
+                          context.push('/profile');
+                        },
+                      ),
+                      IconButton(
                         icon: const Icon(Icons.history_rounded, color: GameColors.textSecondary),
                         onPressed: () {
                           HapticsUtil.lightTap();
@@ -123,7 +130,7 @@ class HomeScreen extends StatelessWidget {
                 badgeText: 'FAST PAIRING',
                 onTap: () {
                   HapticsUtil.mediumTap();
-                  context.push('/online-lobby');
+                  context.push('/matchmaking');
                 },
               ),
               const Spacer(),
