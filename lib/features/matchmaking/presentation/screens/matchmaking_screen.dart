@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
 import '../../../../core/utils/haptics_util.dart';
+import '../../../../core/widgets/creator_footer.dart';
 import '../../../game/domain/models/match_config.dart';
 import '../../../online/data/supabase_match_repository.dart';
 
@@ -59,7 +60,21 @@ class _MatchmakingScreenState extends ConsumerState<MatchmakingScreen>
       return;
     }
 
-    await repo.ensureAuthenticatedUser();
+    final userId = await repo.ensureAuthenticatedUser();
+    if (userId == null) {
+      if (!mounted) return;
+      final authErr = repo.lastAuthError ?? 'Authentication failed. Please verify Supabase configuration.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authErr),
+          backgroundColor: GameColors.wicket,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+      _cancelQueue();
+      return;
+    }
+
     final res = await repo.joinMatchmaking(const MatchConfig());
 
     if (!mounted) return;
@@ -228,6 +243,7 @@ class _MatchmakingScreenState extends ConsumerState<MatchmakingScreen>
           ),
         ),
       ),
+      bottomNavigationBar: const CreatorFooter(),
     );
   }
 }

@@ -26,34 +26,102 @@ class SupabaseMatchRepository {
 
   String? get currentUserId => _client?.auth.currentUser?.id;
 
+  String? lastAuthError;
+  String? lastRoomError;
+  String? lastErrorCode;
+  String? lastErrorDetails;
+  String? lastErrorHint;
+
   /// Ensures an authenticated session exists (anonymous sign-in if needed).
   Future<String?> ensureAuthenticatedUser() async {
     final client = _client;
-    if (client == null) return null;
+    if (client == null) {
+      lastAuthError = 'Supabase client is not initialized or URL/anon key is missing.';
+      return null;
+    }
 
     try {
+      lastAuthError = null;
       if (client.auth.currentUser == null) {
         final authResponse = await client.auth.signInAnonymously();
-        return authResponse.user?.id;
+        final uid = authResponse.user?.id;
+        if (uid != null) {
+          await ensureProfileExists(uid);
+        }
+        return uid;
       }
-      return client.auth.currentUser?.id;
-    } catch (e) {
-      debugPrint('Supabase Auth error: $e');
+      final uid = client.auth.currentUser?.id;
+      if (uid != null) {
+        await ensureProfileExists(uid);
+      }
+      return uid;
+    } on AuthException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (e.statusCode == '422' || msg.contains('anonymous sign-ins are disabled') || msg.contains('anonymous_provider_disabled')) {
+        lastAuthError = 'Anonymous sign-in is disabled in Supabase. Enable "Anonymous sign-ins" in your Supabase Dashboard under Authentication -> Providers.';
+      } else {
+        lastAuthError = 'Authentication failed: ${e.message}${e.statusCode != null ? " (Status: ${e.statusCode})" : ""}';
+      }
+      debugPrint('Supabase Auth error: $lastAuthError');
       return null;
+    } catch (e) {
+      lastAuthError = 'Unexpected auth error: $e';
+      debugPrint('Supabase Auth error: $lastAuthError');
+      return null;
+    }
+  }
+
+  /// Ensures that a player_profiles row exists for the given user ID.
+  Future<void> ensureProfileExists([String? userId]) async {
+    final client = _client;
+    final uid = userId ?? currentUserId;
+    if (client == null || uid == null) return;
+
+    try {
+      final existing = await client.from('player_profiles').select('id').eq('id', uid).maybeSingle();
+      if (existing == null) {
+        await client.from('player_profiles').upsert({
+          'id': uid,
+          'display_name': 'Player ${uid.length >= 4 ? uid.substring(0, 4) : uid}',
+          'avatar_index': 0,
+        });
+      }
+    } catch (e) {
+      debugPrint('Error ensuring profile exists: $e');
     }
   }
 
   /// Invokes `rpc_create_room` with configuration.
   Future<Map<String, dynamic>?> createRoom(MatchConfig config) async {
     final client = _client;
-    if (client == null) return null;
+    if (client == null) {
+      lastRoomError = 'Supabase client is not configured';
+      return null;
+    }
 
     try {
+      lastRoomError = null;
+      lastErrorCode = null;
+      lastErrorDetails = null;
+      lastErrorHint = null;
+
       final res = await client.rpc('rpc_create_room', params: {
         'p_config': config.toJson(),
       });
       return Map<String, dynamic>.from(res as Map);
+    } on PostgrestException catch (e) {
+      lastErrorCode = e.code;
+      lastErrorDetails = e.details?.toString();
+      lastErrorHint = e.hint;
+      if (e.message.contains('Not authenticated')) {
+        lastRoomError = 'Authentication session missing or expired. Please sign in and try again.';
+      } else {
+        lastRoomError = '${e.message}${e.code != null ? " (Code: ${e.code})" : ""}';
+      }
+      debugPrint('Error creating room: $lastRoomError (Details: $lastErrorDetails, Hint: $lastErrorHint)');
+      return null;
     } catch (e) {
+      lastRoomError = 'Unexpected error creating room: $e';
       debugPrint('Error creating room: $e');
       return null;
     }
@@ -62,14 +130,30 @@ class SupabaseMatchRepository {
   /// Invokes `rpc_join_room` with room code.
   Future<Map<String, dynamic>?> joinRoom(String roomCode) async {
     final client = _client;
-    if (client == null) return null;
+    if (client == null) {
+      lastRoomError = 'Supabase client is not configured';
+      return null;
+    }
 
     try {
+      lastRoomError = null;
+      lastErrorCode = null;
+      lastErrorDetails = null;
+      lastErrorHint = null;
+
       final res = await client.rpc('rpc_join_room', params: {
         'p_code': roomCode.trim().toUpperCase(),
       });
       return Map<String, dynamic>.from(res as Map);
+    } on PostgrestException catch (e) {
+      lastErrorCode = e.code;
+      lastErrorDetails = e.details?.toString();
+      lastErrorHint = e.hint;
+      lastRoomError = '${e.message}${e.code != null ? " (Code: ${e.code})" : ""}';
+      debugPrint('Error joining room: $lastRoomError (Details: $lastErrorDetails, Hint: $lastErrorHint)');
+      return null;
     } catch (e) {
+      lastRoomError = 'Unexpected error joining room: $e';
       debugPrint('Error joining room: $e');
       return null;
     }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
+import '../../../../core/widgets/creator_footer.dart';
 import '../../../game/domain/models/match_config.dart';
 import '../../data/supabase_match_repository.dart';
 
@@ -40,7 +41,16 @@ class _OnlineLobbyScreenState extends ConsumerState<OnlineLobbyScreen>
     }
 
     setState(() => _isLoading = true);
-    await repo.ensureAuthenticatedUser();
+    final userId = await repo.ensureAuthenticatedUser();
+    if (userId == null) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        final authErr = repo.lastAuthError ?? 'Authentication failed. Please verify Supabase setup.';
+        _showAuthErrorDialog(authErr);
+      }
+      return;
+    }
+
     final res = await repo.createRoom(const MatchConfig());
     setState(() => _isLoading = false);
 
@@ -49,8 +59,13 @@ class _OnlineLobbyScreenState extends ConsumerState<OnlineLobbyScreen>
       final roomCode = res['room_code'] as String;
       context.push('/room/$roomId?code=$roomCode&isHost=true');
     } else if (mounted) {
+      final err = repo.lastRoomError ?? 'Failed to create room. Please try again.';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to create room. Please try again.')),
+        SnackBar(
+          content: Text(err),
+          backgroundColor: GameColors.wicket,
+          duration: const Duration(seconds: 5),
+        ),
       );
     }
   }
@@ -71,7 +86,16 @@ class _OnlineLobbyScreenState extends ConsumerState<OnlineLobbyScreen>
     }
 
     setState(() => _isLoading = true);
-    await repo.ensureAuthenticatedUser();
+    final userId = await repo.ensureAuthenticatedUser();
+    if (userId == null) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        final authErr = repo.lastAuthError ?? 'Authentication failed. Please verify Supabase setup.';
+        _showAuthErrorDialog(authErr);
+      }
+      return;
+    }
+
     final res = await repo.joinRoom(code);
     setState(() => _isLoading = false);
     if (!mounted) return;
@@ -80,10 +104,62 @@ class _OnlineLobbyScreenState extends ConsumerState<OnlineLobbyScreen>
       final roomId = res['room_id'] as String;
       context.push('/room/$roomId?code=$code&isHost=false');
     } else {
+      final err = repo.lastRoomError ?? 'Could not find room or room is full/expired';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not find room or room is full/expired')),
+        SnackBar(
+          content: Text(err),
+          backgroundColor: GameColors.wicket,
+          duration: const Duration(seconds: 5),
+        ),
       );
     }
+  }
+
+  void _showAuthErrorDialog(String error) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: GameColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            const Icon(Icons.error_outline_rounded, color: GameColors.wicket),
+            const SizedBox(width: 10),
+            Text('Authentication Error', style: GameTypography.headlineMedium),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              error,
+              style: GameTypography.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: GameColors.background,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: GameColors.glassBorder),
+              ),
+              child: Text(
+                'Supabase Dashboard -> Authentication -> Providers -> Anonymous -> Enable "Allow anonymous sign-ins".',
+                style: GameTypography.caption.copyWith(color: GameColors.textSecondary, fontSize: 11),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: ElevatedButton.styleFrom(backgroundColor: GameColors.lime),
+            child: const Text('OK', style: TextStyle(color: GameColors.background, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showNotConfiguredDialog() {
@@ -167,6 +243,7 @@ class _OnlineLobbyScreenState extends ConsumerState<OnlineLobbyScreen>
           ],
         ),
       ),
+      bottomNavigationBar: const CreatorFooter(),
     );
   }
 
