@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
+import '../../../../core/widgets/creator_footer.dart';
 import '../../data/match_history_repository.dart';
 
 class HistoryScreen extends ConsumerWidget {
@@ -19,8 +20,17 @@ class HistoryScreen extends ConsumerWidget {
         title: Text('MATCH HISTORY', style: GameTypography.headlineMedium),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: historyAsync.when(
+      bottomNavigationBar: const CreatorFooter(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: GameColors.arcadeBackgroundGradient,
+        ),
+        child: SafeArea(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: historyAsync.when(
           data: (records) {
             if (records.isEmpty) {
               return Center(
@@ -120,6 +130,9 @@ class HistoryScreen extends ConsumerWidget {
           },
           loading: () => const Center(child: CircularProgressIndicator(color: GameColors.lime)),
           error: (err, _) => Center(child: Text('Error loading history: $err', style: GameTypography.bodyMedium)),
+        ),
+            ),
+          ),
         ),
       ),
     );

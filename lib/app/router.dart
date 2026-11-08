@@ -1,4 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../core/theme/game_colors.dart';
+import '../features/game/domain/models/ball_event.dart';
+import '../features/game/presentation/widgets/ball_outcome_dialog.dart';
 import '../features/history/presentation/screens/history_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/matchmaking/presentation/screens/matchmaking_screen.dart';
@@ -69,6 +73,30 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/ball-outcome-preview',
+      builder: (context, state) => Scaffold(
+        backgroundColor: GameColors.background,
+        body: Center(
+          child: BallOutcomeDialog(
+            ballEvent: const BallEvent(
+              inningsNo: 1,
+              ballNo: 1,
+              batterId: 'p1',
+              bowlerId: 'p2',
+              batterNumber: 7,
+              bowlerNumber: 3,
+              runsScored: 7,
+              isWicket: false,
+              cumulativeRuns: 7,
+            ),
+            batterName: 'Player 1',
+            bowlerName: 'Player 2',
+            onDismiss: () {},
+          ),
+        ),
+      ),
     ),
   ],
 );

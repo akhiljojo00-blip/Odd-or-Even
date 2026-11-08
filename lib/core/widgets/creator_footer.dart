@@ -20,7 +20,7 @@ class CreatorFooter extends StatelessWidget {
       color: GameColors.textMuted,
     );
 
-    final leftWidget = SelectableText.rich(
+    final leftWidget = Text.rich(
       TextSpan(
         children: [
           TextSpan(
@@ -36,9 +36,11 @@ class CreatorFooter extends StatelessWidget {
           ),
         ],
       ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
 
-    final rightWidget = SelectableText.rich(
+    final rightWidget = Text.rich(
       TextSpan(
         children: [
           TextSpan(
@@ -54,6 +56,9 @@ class CreatorFooter extends StatelessWidget {
           ),
         ],
       ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.end,
     );
 
     return SafeArea(
@@ -63,13 +68,14 @@ class CreatorFooter extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             // If the available width is sufficiently wide, render on a single horizontal row
-            if (constraints.maxWidth >= 320) {
+            if (constraints.maxWidth >= 360) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  leftWidget,
-                  rightWidget,
+                  Flexible(child: leftWidget),
+                  const SizedBox(width: 8),
+                  Flexible(child: rightWidget),
                 ],
               );
             }

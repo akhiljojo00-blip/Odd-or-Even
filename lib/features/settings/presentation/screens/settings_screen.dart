@@ -3,6 +3,7 @@ import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
 import '../../../../core/utils/haptics_util.dart';
 import '../../../../core/utils/sound_util.dart';
+import '../../../../core/widgets/creator_footer.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -25,10 +26,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text('SETTINGS', style: GameTypography.headlineMedium),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          children: [
+      bottomNavigationBar: const CreatorFooter(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: GameColors.arcadeBackgroundGradient,
+        ),
+        child: SafeArea(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                children: [
             _buildSectionHeader('AUDIO & HAPTICS'),
             const SizedBox(height: 10),
             _buildSwitchTile(
@@ -83,6 +93,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ],
+        ),
+            ),
+          ),
         ),
       ),
     );

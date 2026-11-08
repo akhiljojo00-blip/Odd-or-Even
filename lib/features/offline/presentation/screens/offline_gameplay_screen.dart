@@ -67,39 +67,50 @@ class _OfflineGameplayScreenState extends ConsumerState<OfflineGameplayScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                // 1. Player badges header
-                _buildPlayerHeader(match),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: GameColors.arcadeBackgroundGradient,
+        ),
+        child: SafeArea(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 540),
+              child: Stack(
+                children: [
+                  Column(
+                    children: [
+                      // 1. Player badges header
+                      _buildPlayerHeader(match),
 
-                // 2. Active Phase content
-                Expanded(
-                  child: _buildPhaseContent(context, match, offlineState),
-                ),
-              ],
-            ),
+                      // 2. Active Phase content
+                      Expanded(
+                        child: _buildPhaseContent(context, match, offlineState),
+                      ),
+                    ],
+                  ),
 
-            // 3. Ball outcome dialog overlay
-            if (offlineState.showBallOutcomeOverlay && match.lastBallEvent != null)
-              Container(
-                color: Colors.black.withValues(alpha: 0.75),
-                child: BallOutcomeDialog(
-                  ballEvent: match.lastBallEvent!,
-                  batterName: match.getPlayerById(match.lastBallEvent!.batterId).name,
-                  bowlerName: match.getPlayerById(match.lastBallEvent!.bowlerId).name,
-                  onDismiss: () {
-                    setState(() {
-                      _stagedNumber = null;
-                      _timerResetKey = UniqueKey();
-                    });
-                    ref.read(offlineGameProvider.notifier).dismissBallOutcome();
-                  },
-                ),
+                  // 3. Ball outcome dialog overlay
+                  if (offlineState.showBallOutcomeOverlay && match.lastBallEvent != null)
+                    Container(
+                      color: Colors.black.withValues(alpha: 0.75),
+                      child: BallOutcomeDialog(
+                        ballEvent: match.lastBallEvent!,
+                        batterName: match.getPlayerById(match.lastBallEvent!.batterId).name,
+                        bowlerName: match.getPlayerById(match.lastBallEvent!.bowlerId).name,
+                        onDismiss: () {
+                          setState(() {
+                            _stagedNumber = null;
+                            _timerResetKey = UniqueKey();
+                          });
+                          ref.read(offlineGameProvider.notifier).dismissBallOutcome();
+                        },
+                      ),
+                    ),
+                ],
               ),
-          ],
+            ),
+          ),
         ),
       ),
     );

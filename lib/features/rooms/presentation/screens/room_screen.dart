@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
 import '../../../../core/utils/haptics_util.dart';
+import '../../../../core/widgets/creator_footer.dart';
 import '../../../game/domain/models/game_enums.dart';
 import '../../../game/domain/models/match_config.dart';
 import '../../../online/data/supabase_match_repository.dart';
@@ -129,191 +130,230 @@ class _RoomScreenState extends ConsumerState<RoomScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('MATCH ROOM', style: GameTypography.headlineMedium),
+        title: Text('MATCH ROOM', style: GameTypography.headlineMedium.copyWith(letterSpacing: 2)),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Room Code Card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: GameColors.surface,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: GameColors.lime.withValues(alpha: 0.5)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: GameColors.lime.withValues(alpha: 0.1),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
+      bottomNavigationBar: const CreatorFooter(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: GameColors.arcadeBackgroundGradient,
+        ),
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('SHARE ROOM CODE', style: GameTypography.caption.copyWith(letterSpacing: 1.5)),
-                    const SizedBox(height: 8),
+                    // Room Code Card
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: GameColors.surfaceGradient,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: GameColors.lime.withValues(alpha: 0.5), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: GameColors.lime.withValues(alpha: 0.15),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Text('SHARE ROOM CODE', style: GameTypography.caption.copyWith(letterSpacing: 1.5, color: GameColors.cyanBright)),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                widget.roomCode,
+                                style: GameTypography.displayLarge.copyWith(
+                                  letterSpacing: 6.0,
+                                  color: GameColors.lime,
+                                  fontSize: 32,
+                                  shadows: [
+                                    BoxShadow(
+                                      color: GameColors.lime.withValues(alpha: 0.6),
+                                      blurRadius: 16,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              IconButton(
+                                icon: const Icon(Icons.copy_rounded, color: GameColors.lime),
+                                onPressed: _copyRoomCode,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _hasGuestJoined
+                                ? 'Opponent has connected to room!'
+                                : 'Waiting for opponent to enter this code...',
+                            style: GameTypography.caption.copyWith(
+                              color: _hasGuestJoined ? GameColors.lime : GameColors.amber,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Player Ready Statuses
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          widget.roomCode,
-                          style: GameTypography.displayLarge.copyWith(
-                            letterSpacing: 6.0,
-                            color: GameColors.lime,
-                            fontSize: 32,
+                        Expanded(
+                          child: _buildParticipantCard(
+                            label: 'HOST',
+                            isMe: widget.isHost,
+                            isConfirmed: _hostConfirmed,
+                            color: GameColors.player1,
                           ),
                         ),
                         const SizedBox(width: 12),
-                        IconButton(
-                          icon: const Icon(Icons.copy_rounded, color: GameColors.lime),
-                          onPressed: _copyRoomCode,
+                        Expanded(
+                          child: _buildParticipantCard(
+                            label: 'GUEST',
+                            isMe: !widget.isHost,
+                            isConfirmed: _guestConfirmed,
+                            color: GameColors.player2,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _hasGuestJoined
-                          ? 'Opponent has connected to room!'
-                          : 'Waiting for opponent to enter this code...',
-                      style: GameTypography.caption.copyWith(
-                        color: _hasGuestJoined ? GameColors.lime : GameColors.amber,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(height: 24),
+
+                    Text('MATCH SETTINGS AGREEMENT', style: GameTypography.caption.copyWith(letterSpacing: 1.2, color: GameColors.lime, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+
+                    // Config details
+                    _buildConfigOption(
+                      title: 'GAME MODE',
+                      value: _config.gameMode.label,
+                      icon: Icons.flash_on_rounded,
+                      onTap: isConfirmedByMe
+                          ? null
+                          : () {
+                              setState(() {
+                                _config = _config.copyWith(
+                                  gameMode: _config.gameMode == GameMode.standard
+                                      ? GameMode.fast
+                                      : GameMode.standard,
+                                );
+                              });
+                            },
+                    ),
+                    const SizedBox(height: 10),
+
+                    _buildConfigOption(
+                      title: 'OVERS PER INNINGS',
+                      value: _config.overs != null ? '${_config.overs} Overs' : 'Unlimited',
+                      icon: Icons.sports_cricket,
+                      onTap: isConfirmedByMe
+                          ? null
+                          : () {
+                              setState(() {
+                                if (_config.overs == null) {
+                                  _config = _config.copyWith(overs: 1);
+                                } else if (_config.overs == 1) {
+                                  _config = _config.copyWith(overs: 2);
+                                } else if (_config.overs == 2) {
+                                  _config = _config.copyWith(overs: 5);
+                                } else {
+                                  _config = _config.copyWith(clearOvers: true);
+                                }
+                              });
+                            },
+                    ),
+                    const SizedBox(height: 10),
+
+                    _buildConfigOption(
+                      title: 'DECISION TIMER',
+                      value: '${_config.decisionTimerSeconds}s',
+                      icon: Icons.timer_outlined,
+                      onTap: isConfirmedByMe
+                          ? null
+                          : () {
+                              setState(() {
+                                final current = _config.decisionTimerSeconds;
+                                final next = current == 5 ? 10 : (current == 10 ? 15 : (current == 15 ? 20 : (current == 20 ? 30 : 5)));
+                                _config = _config.copyWith(decisionTimerSeconds: next);
+                              });
+                            },
+                    ),
+                    const SizedBox(height: 10),
+
+                    _buildConfigOption(
+                      title: 'SERIES TARGET',
+                      value: '${_config.seriesTargetPoints} Wins',
+                      icon: Icons.emoji_events_outlined,
+                      onTap: isConfirmedByMe
+                          ? null
+                          : () {
+                              setState(() {
+                                final current = _config.seriesTargetPoints;
+                                final next = current == 1 ? 3 : (current == 3 ? 5 : (current == 5 ? 6 : (current == 6 ? 10 : 1)));
+                                _config = _config.copyWith(seriesTargetPoints: next);
+                              });
+                            },
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Action button
+                    SizedBox(
+                      height: 56,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: isConfirmedByMe
+                              ? null
+                              : const LinearGradient(
+                                  colors: [GameColors.lime, GameColors.cyanBright],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: isConfirmedByMe
+                              ? null
+                              : [
+                                  BoxShadow(
+                                    color: GameColors.lime.withValues(alpha: 0.3),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: _isSubmitting ? null : _handleConfirmSettings,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isConfirmedByMe ? GameColors.surfaceElevated : Colors.transparent,
+                            foregroundColor: isConfirmedByMe ? GameColors.lime : GameColors.background,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                          ),
+                          child: _isSubmitting
+                              ? const CircularProgressIndicator()
+                              : Text(
+                                  isConfirmedByMe ? 'SETTINGS CONFIRMED ✓' : 'CONFIRM SETTINGS',
+                                  style: GameTypography.headlineMedium.copyWith(
+                                    fontSize: 16,
+                                    color: isConfirmedByMe ? GameColors.lime : GameColors.background,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-
-              // Player Ready Statuses
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildParticipantCard(
-                      label: 'HOST',
-                      isMe: widget.isHost,
-                      isConfirmed: _hostConfirmed,
-                      color: GameColors.player1,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildParticipantCard(
-                      label: 'GUEST',
-                      isMe: !widget.isHost,
-                      isConfirmed: _guestConfirmed,
-                      color: GameColors.player2,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              Text('MATCH SETTINGS AGREEMENT', style: GameTypography.caption.copyWith(letterSpacing: 1.2, color: GameColors.lime, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-
-              // Config details
-              _buildConfigOption(
-                title: 'GAME MODE',
-                value: _config.gameMode.label,
-                icon: Icons.flash_on_rounded,
-                onTap: isConfirmedByMe
-                    ? null
-                    : () {
-                        setState(() {
-                          _config = _config.copyWith(
-                            gameMode: _config.gameMode == GameMode.standard
-                                ? GameMode.fast
-                                : GameMode.standard,
-                          );
-                        });
-                      },
-              ),
-              const SizedBox(height: 10),
-
-              _buildConfigOption(
-                title: 'OVERS PER INNINGS',
-                value: _config.overs != null ? '${_config.overs} Overs' : 'Unlimited',
-                icon: Icons.sports_cricket,
-                onTap: isConfirmedByMe
-                    ? null
-                    : () {
-                        setState(() {
-                          if (_config.overs == null) {
-                            _config = _config.copyWith(overs: 1);
-                          } else if (_config.overs == 1) {
-                            _config = _config.copyWith(overs: 2);
-                          } else if (_config.overs == 2) {
-                            _config = _config.copyWith(overs: 5);
-                          } else {
-                            _config = _config.copyWith(clearOvers: true);
-                          }
-                        });
-                      },
-              ),
-              const SizedBox(height: 10),
-
-              _buildConfigOption(
-                title: 'DECISION TIMER',
-                value: '${_config.decisionTimerSeconds}s',
-                icon: Icons.timer_outlined,
-                onTap: isConfirmedByMe
-                    ? null
-                    : () {
-                        setState(() {
-                          final current = _config.decisionTimerSeconds;
-                          final next = current == 5 ? 10 : (current == 10 ? 15 : (current == 15 ? 20 : (current == 20 ? 30 : 5)));
-                          _config = _config.copyWith(decisionTimerSeconds: next);
-                        });
-                      },
-              ),
-              const SizedBox(height: 10),
-
-              _buildConfigOption(
-                title: 'SERIES TARGET',
-                value: '${_config.seriesTargetPoints} Wins',
-                icon: Icons.emoji_events_outlined,
-                onTap: isConfirmedByMe
-                    ? null
-                    : () {
-                        setState(() {
-                          final current = _config.seriesTargetPoints;
-                          final next = current == 1 ? 3 : (current == 3 ? 5 : (current == 5 ? 6 : (current == 6 ? 10 : 1)));
-                          _config = _config.copyWith(seriesTargetPoints: next);
-                        });
-                      },
-              ),
-              const SizedBox(height: 32),
-
-              // Action button
-              SizedBox(
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _handleConfirmSettings,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isConfirmedByMe ? GameColors.surfaceElevated : GameColors.lime,
-                    foregroundColor: isConfirmedByMe ? GameColors.lime : GameColors.background,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                  ),
-                  child: _isSubmitting
-                      ? const CircularProgressIndicator()
-                      : Text(
-                          isConfirmedByMe ? 'SETTINGS CONFIRMED ✓' : 'CONFIRM SETTINGS',
-                          style: GameTypography.headlineMedium.copyWith(
-                            fontSize: 16,
-                            color: isConfirmedByMe ? GameColors.lime : GameColors.background,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
         ),
       ),

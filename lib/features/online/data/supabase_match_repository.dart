@@ -202,6 +202,9 @@ class SupabaseMatchRepository {
       final ballEvents = await getBallEvents(matchId);
       final map = Map<String, dynamic>.from(res);
       map['ballHistory'] = ballEvents.map((e) => e.toJson()).toList();
+      if (ballEvents.isNotEmpty) {
+        map['lastBallEvent'] = ballEvents.last.toJson();
+      }
       return GameMatchState.fromJson(map);
     } catch (e) {
       debugPrint('Error fetching match: $e');
@@ -361,7 +364,7 @@ class SupabaseMatchRepository {
     }
   }
 
-  /// Fetches historical resolved ball events.
+  /// Fetches historical resolved ball events in chronological order.
   Future<List<BallEvent>> getBallEvents(String matchId) async {
     final client = _client;
     if (client == null) return [];
@@ -371,9 +374,20 @@ class SupabaseMatchRepository {
           .from('ball_events')
           .select()
           .eq('match_id', matchId)
-          .order('innings_no')
-          .order('ball_no');
-      return (res as List).map((e) => BallEvent.fromJson(Map<String, dynamic>.from(e))).toList();
+          .order('innings_no', ascending: true)
+          .order('ball_no', ascending: true);
+      final events = (res as List)
+          .map((e) => BallEvent.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+
+      // Ensure chronological ordering regardless of SDK parameter defaults
+      events.sort((a, b) {
+        if (a.inningsNo != b.inningsNo) {
+          return a.inningsNo.compareTo(b.inningsNo);
+        }
+        return a.ballNo.compareTo(b.ballNo);
+      });
+      return events;
     } catch (e) {
       debugPrint('Error fetching ball events: $e');
       return [];

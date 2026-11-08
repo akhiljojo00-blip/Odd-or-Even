@@ -5,6 +5,7 @@ import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
 import '../../../game/domain/models/game_enums.dart';
 import '../../../game/domain/models/match_config.dart';
+import '../../../../core/widgets/creator_footer.dart';
 import '../controllers/offline_game_controller.dart';
 
 class OfflineSetupScreen extends ConsumerStatefulWidget {
@@ -51,66 +52,97 @@ class _OfflineSetupScreenState extends ConsumerState<OfflineSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: GameColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('MATCH CONFIGURATION', style: GameTypography.headlineMedium),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildSectionTitle('PLAYERS (PASS & PLAY)'),
-              const SizedBox(height: 10),
-              _buildPlayerInputs(),
-              const SizedBox(height: 24),
+      bottomNavigationBar: const CreatorFooter(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: GameColors.arcadeBackgroundGradient,
+        ),
+        child: SafeArea(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildSectionTitle('PLAYERS (PASS & PLAY)'),
+                    const SizedBox(height: 10),
+                    _buildPlayerInputs(),
+                    const SizedBox(height: 24),
 
-              _buildSectionTitle('GAME MODE'),
-              const SizedBox(height: 10),
-              _buildGameModeSelector(),
-              const SizedBox(height: 24),
+                    _buildSectionTitle('GAME MODE'),
+                    const SizedBox(height: 10),
+                    _buildGameModeSelector(),
+                    const SizedBox(height: 24),
 
-              _buildSectionTitle('OVERS PER INNINGS'),
-              const SizedBox(height: 10),
-              _buildOversSelector(),
-              const SizedBox(height: 24),
+                    _buildSectionTitle('OVERS PER INNINGS'),
+                    const SizedBox(height: 10),
+                    _buildOversSelector(),
+                    const SizedBox(height: 24),
 
-              _buildSectionTitle('DECISION TIMER (SECONDS)'),
-              const SizedBox(height: 10),
-              _buildTimerSelector(),
-              const SizedBox(height: 24),
+                    _buildSectionTitle('DECISION TIMER (SECONDS)'),
+                    const SizedBox(height: 10),
+                    _buildTimerSelector(),
+                    const SizedBox(height: 24),
 
-              _buildSectionTitle('SERIES TARGET WINS'),
-              const SizedBox(height: 10),
-              _buildSeriesTargetSelector(),
-              const SizedBox(height: 36),
+                    _buildSectionTitle('SERIES TARGET WINS'),
+                    const SizedBox(height: 10),
+                    _buildSeriesTargetSelector(),
+                    const SizedBox(height: 36),
 
-              SizedBox(
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _onStartMatch,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: GameColors.lime,
-                    foregroundColor: GameColors.background,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                    SizedBox(
+                      height: 56,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [GameColors.lime, GameColors.cyanBright],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: GameColors.lime.withValues(alpha: 0.35),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: _onStartMatch,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: GameColors.background,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          child: Text(
+                            'START MATCH',
+                            style: GameTypography.headlineMedium.copyWith(
+                              color: GameColors.background,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'START MATCH',
-                    style: GameTypography.headlineMedium.copyWith(
-                      color: GameColors.background,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-            ],
+            ),
           ),
         ),
       ),

@@ -27,25 +27,37 @@ class ScoreboardCard extends StatelessWidget {
         ? matchState.config.maxBalls! - ballsBowled
         : null;
 
+    final chaseProgress = target != null && target > 0
+        ? (currentScore / target).clamp(0.0, 1.0)
+        : 0.0;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            GameColors.surfaceElevated.withValues(alpha: 0.8),
-            GameColors.surface.withValues(alpha: 0.9),
+            Color(0xFF261448),
+            Color(0xFF160B2C),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: GameColors.glassBorder),
+        border: Border.all(
+          color: GameColors.glassBorder,
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 16,
+            color: GameColors.royalPurple.withValues(alpha: 0.35),
+            blurRadius: 20,
             offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -56,25 +68,63 @@ class ScoreboardCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: GameColors.emerald.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: GameColors.emerald.withValues(alpha: 0.5)),
+                  gradient: inningsNo == 1
+                      ? const LinearGradient(colors: [Color(0xFF047857), Color(0xFF10B981)])
+                      : const LinearGradient(colors: [Color(0xFFD97706), Color(0xFFF59E0B)]),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (inningsNo == 1 ? GameColors.emerald : GameColors.gold).withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: Text(
-                  inningsNo == 1 ? '1ST INNINGS' : '2ND INNINGS (CHASE)',
-                  style: GameTypography.caption.copyWith(
-                    color: GameColors.emerald,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      inningsNo == 1 ? Icons.sports_cricket_rounded : Icons.flag_rounded,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      inningsNo == 1 ? '1ST INNINGS' : '2ND INNINGS (CHASE)',
+                      style: GameTypography.caption.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.6,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Text(
-                'OVERS: $oversStr / $maxOversStr',
-                style: GameTypography.caption.copyWith(
-                  color: GameColors.textSecondary,
-                  letterSpacing: 1.0,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.circle, size: 8, color: GameColors.cyanBright),
+                    const SizedBox(width: 6),
+                    Text(
+                      'OVERS: $oversStr / $maxOversStr',
+                      style: GameTypography.caption.copyWith(
+                        color: GameColors.cyanBright,
+                        letterSpacing: 0.8,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -90,8 +140,15 @@ class ScoreboardCard extends StatelessWidget {
               Text(
                 '$currentScore',
                 style: GameTypography.scoreNumber.copyWith(
-                  fontSize: 56,
-                  color: GameColors.textPrimary,
+                  fontSize: 58,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: GameColors.electricViolet.withValues(alpha: 0.6),
+                      blurRadius: 18,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(width: 8),
@@ -99,17 +156,20 @@ class ScoreboardCard extends StatelessWidget {
                 '/ 0',
                 style: GameTypography.headlineLarge.copyWith(
                   fontSize: 28,
+                  fontWeight: FontWeight.w800,
                   color: GameColors.textMuted,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             'RUNS (1 WICKET INNINGS)',
             style: GameTypography.caption.copyWith(
               color: GameColors.textMuted,
-              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.0,
+              fontSize: 10.5,
             ),
           ),
 
@@ -117,35 +177,51 @@ class ScoreboardCard extends StatelessWidget {
           if (target != null && inningsNo == 2) ...[
             const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: GameColors.gold.withValues(alpha: 0.15),
+                color: Colors.black.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: GameColors.gold.withValues(alpha: 0.4)),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(Icons.flag_rounded, color: GameColors.gold, size: 18),
-                      const SizedBox(width: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.emoji_events_rounded, color: GameColors.goldBright, size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            'TARGET: $target',
+                            style: GameTypography.bodyMedium.copyWith(
+                              color: GameColors.goldBright,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
                       Text(
-                        'TARGET: $target',
-                        style: GameTypography.bodyMedium.copyWith(
-                          color: GameColors.gold,
-                          fontWeight: FontWeight.bold,
+                        needRuns != null && needRuns > 0
+                            ? 'Need $needRuns runs${ballsRemaining != null ? ' in $ballsRemaining balls' : ''}'
+                            : 'Target reached!',
+                        style: GameTypography.caption.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 11.5,
                         ),
                       ),
                     ],
                   ),
-                  Text(
-                    needRuns != null && needRuns > 0
-                        ? 'Need $needRuns runs${ballsRemaining != null ? ' in $ballsRemaining balls' : ''}'
-                        : 'Target reached!',
-                    style: GameTypography.caption.copyWith(
-                      color: GameColors.textPrimary,
-                      fontWeight: FontWeight.w600,
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: chaseProgress,
+                      minHeight: 6,
+                      backgroundColor: Colors.white.withValues(alpha: 0.15),
+                      valueColor: const AlwaysStoppedAnimation<Color>(GameColors.goldBright),
                     ),
                   ),
                 ],

@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:odd_or_even/core/widgets/creator_footer.dart';
 import 'package:odd_or_even/features/game/domain/engine/odd_or_even_engine.dart';
 import 'package:odd_or_even/features/game/domain/models/match_config.dart';
 import 'package:odd_or_even/features/game/domain/models/player_info.dart';
 import 'package:odd_or_even/features/game/presentation/widgets/number_pad.dart';
 import 'package:odd_or_even/features/game/presentation/widgets/scoreboard_card.dart';
+import 'package:odd_or_even/features/history/presentation/screens/history_screen.dart';
 import 'package:odd_or_even/features/home/presentation/screens/home_screen.dart';
 import 'package:odd_or_even/features/matchmaking/presentation/screens/matchmaking_screen.dart';
+import 'package:odd_or_even/features/offline/presentation/screens/offline_result_screen.dart';
+import 'package:odd_or_even/features/offline/presentation/screens/offline_setup_screen.dart';
 import 'package:odd_or_even/features/profile/presentation/screens/profile_screen.dart';
 import 'package:odd_or_even/features/rooms/presentation/screens/room_screen.dart';
+import 'package:odd_or_even/features/settings/presentation/screens/settings_screen.dart';
 
 void main() {
   group('Widget Tests', () {
@@ -143,6 +148,61 @@ void main() {
       expect(find.text('LOSSES'), findsOneWidget);
       expect(find.text('TIED'), findsOneWidget);
       expect(find.text('SAVE PROFILE'), findsOneWidget);
+      expect(find.byType(CreatorFooter), findsOneWidget);
+    });
+
+    testWidgets('OfflineSetupScreen renders match configuration and CreatorFooter', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: OfflineSetupScreen(),
+          ),
+        ),
+      );
+
+      expect(find.text('MATCH CONFIGURATION'), findsOneWidget);
+      expect(find.text('PLAYERS (PASS & PLAY)'), findsOneWidget);
+      expect(find.text('START MATCH'), findsOneWidget);
+      expect(find.byType(CreatorFooter), findsOneWidget);
+    });
+
+    testWidgets('HistoryScreen renders match history and CreatorFooter', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: HistoryScreen(),
+          ),
+        ),
+      );
+
+      expect(find.text('MATCH HISTORY'), findsOneWidget);
+      expect(find.byType(CreatorFooter), findsOneWidget);
+    });
+
+    testWidgets('SettingsScreen renders audio/haptics settings and CreatorFooter', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: SettingsScreen(),
+        ),
+      );
+
+      expect(find.text('SETTINGS'), findsOneWidget);
+      expect(find.text('Sound Effects'), findsOneWidget);
+      expect(find.text('Haptic Feedback'), findsOneWidget);
+      expect(find.byType(CreatorFooter), findsOneWidget);
+    });
+
+    testWidgets('OfflineResultScreen renders safely without crash and shows CreatorFooter', (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: OfflineResultScreen(),
+          ),
+        ),
+      );
+
+      expect(find.byType(OfflineResultScreen), findsOneWidget);
+      expect(find.byType(CreatorFooter), findsOneWidget);
     });
   });
 }

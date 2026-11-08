@@ -135,111 +135,145 @@ class _MatchmakingScreenState extends ConsumerState<MatchmakingScreen>
           onPressed: _cancelQueue,
         ),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Spacer(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: GameColors.arcadeBackgroundGradient,
+        ),
+        child: SafeArea(
+          child: Align(
+            alignment: Alignment.center,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Spacer(),
 
-              // Animated Radar Scanning Circle
-              Center(
-                child: SizedBox(
-                  width: 200,
-                  height: 200,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Pulsing Rings
-                      AnimatedBuilder(
-                        animation: _animController,
-                        builder: (context, child) {
-                          return Container(
-                            width: 140 + (_animController.value * 60),
-                            height: 140 + (_animController.value * 60),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: GameColors.lime.withValues(alpha: 1.0 - _animController.value),
-                                width: 2,
-                              ),
+                    // Animated Radar Scanning Circle
+                    Center(
+                      child: SizedBox(
+                        width: 220,
+                        height: 220,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Outer Radiant Glow
+                            AnimatedBuilder(
+                              animation: _animController,
+                              builder: (context, child) {
+                                return Container(
+                                  width: 130 + (_animController.value * 80),
+                                  height: 130 + (_animController.value * 80),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: GameColors.goldBright.withValues(alpha: (1.0 - _animController.value).clamp(0.0, 1.0)),
+                                      width: 2,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: GameColors.surface,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: GameColors.lime, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: GameColors.lime.withValues(alpha: 0.3),
-                              blurRadius: 24,
-                              spreadRadius: 4,
+                            AnimatedBuilder(
+                              animation: _animController,
+                              builder: (context, child) {
+                                return Container(
+                                  width: 100 + (_animController.value * 60),
+                                  height: 100 + (_animController.value * 60),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: GameColors.electricViolet.withValues(alpha: (1.0 - _animController.value).clamp(0.0, 1.0)),
+                                      width: 2,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                gradient: const RadialGradient(
+                                  colors: [Color(0xFF381A6B), Color(0xFF1E0E3D)],
+                                ),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: GameColors.goldBright, width: 3),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: GameColors.gold.withValues(alpha: 0.45),
+                                    blurRadius: 28,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(Icons.bolt_rounded, size: 60, color: GameColors.goldBright),
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.bolt_rounded, size: 56, color: GameColors.lime),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 36),
-
-              Text(
-                'FINDING OPPONENT',
-                textAlign: TextAlign.center,
-                style: GameTypography.headlineMedium.copyWith(
-                  letterSpacing: 2.0,
-                  color: GameColors.lime,
-                  fontSize: 22,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Searching globally for a 1v1 challenger...',
-                textAlign: TextAlign.center,
-                style: GameTypography.bodyMedium,
-              ),
-              const SizedBox(height: 16),
-
-              Text(
-                '${_secondsElapsed ~/ 60}:${(_secondsElapsed % 60).toString().padLeft(2, '0')}',
-                textAlign: TextAlign.center,
-                style: GameTypography.displayMedium.copyWith(
-                  color: GameColors.gold,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Spacer(),
-
-              // Cancel search
-              SizedBox(
-                height: 54,
-                child: OutlinedButton(
-                  onPressed: _cancelQueue,
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: GameColors.glassBorder),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                  ),
-                  child: Text(
-                    'CANCEL SEARCH',
-                    style: GameTypography.headlineMedium.copyWith(
-                      fontSize: 15,
-                      color: GameColors.textSecondary,
                     ),
-                  ),
+                    const SizedBox(height: 36),
+
+                    ShaderMask(
+                      shaderCallback: (bounds) => GameColors.goldGradient.createShader(bounds),
+                      child: Text(
+                        'FINDING OPPONENT',
+                        textAlign: TextAlign.center,
+                        style: GameTypography.headlineMedium.copyWith(
+                          letterSpacing: 2.2,
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Searching globally for a 1v1 challenger...',
+                      textAlign: TextAlign.center,
+                      style: GameTypography.bodyMedium.copyWith(color: GameColors.textSecondary),
+                    ),
+                    const SizedBox(height: 16),
+
+                    Text(
+                      '${_secondsElapsed ~/ 60}:${(_secondsElapsed % 60).toString().padLeft(2, '0')}',
+                      textAlign: TextAlign.center,
+                      style: GameTypography.displayMedium.copyWith(
+                        color: GameColors.goldBright,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const Spacer(),
+
+                    // Cancel search
+                    SizedBox(
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: _cancelQueue,
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: GameColors.glassBorder, width: 1.5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                        ),
+                        child: Text(
+                          'CANCEL SEARCH',
+                          style: GameTypography.headlineMedium.copyWith(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: GameColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-            ],
+            ),
           ),
         ),
       ),

@@ -49,3 +49,8 @@ app.*.map.json
 
 # Supabase CLI
 supabase/.temp/
+
+# Verification & Test Artifacts
+/screenshots/
+/tool/
+

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
 import '../../../../core/utils/haptics_util.dart';
+import '../../../../core/widgets/creator_footer.dart';
 import '../../../online/data/supabase_match_repository.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -94,138 +95,167 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('PLAYER PROFILE', style: GameTypography.headlineMedium),
+        title: Text('PLAYER PROFILE', style: GameTypography.headlineMedium.copyWith(letterSpacing: 2)),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: GameColors.lime))
-            : SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Avatar selection
-                    Center(
-                      child: Container(
-                        width: 96,
-                        height: 96,
-                        decoration: BoxDecoration(
-                          color: GameColors.lime.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: GameColors.lime, width: 2),
-                        ),
-                        child: Icon(
-                          _avatarIcons[_avatarIndex % _avatarIcons.length],
-                          size: 48,
-                          color: GameColors.lime,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(_avatarIcons.length, (idx) {
-                        final isSelected = _avatarIndex == idx;
-                        return GestureDetector(
-                          onTap: () => setState(() => _avatarIndex = idx),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: isSelected ? GameColors.lime : GameColors.surface,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected ? GameColors.lime : GameColors.glassBorder,
+      bottomNavigationBar: const CreatorFooter(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: GameColors.arcadeBackgroundGradient,
+        ),
+        child: SafeArea(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator(color: GameColors.lime))
+              : Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Avatar selection
+                          Center(
+                            child: Container(
+                              width: 96,
+                              height: 96,
+                              decoration: BoxDecoration(
+                                color: GameColors.lime.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: GameColors.lime, width: 2),
+                              ),
+                              child: Icon(
+                                _avatarIcons[_avatarIndex % _avatarIcons.length],
+                                size: 48,
+                                color: GameColors.lime,
                               ),
                             ),
-                            child: Icon(
-                              _avatarIcons[idx],
-                              size: 18,
-                              color: isSelected ? GameColors.background : GameColors.textSecondary,
+                          ),
+                          const SizedBox(height: 16),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(_avatarIcons.length, (idx) {
+                              final isSelected = _avatarIndex == idx;
+                              return GestureDetector(
+                                onTap: () => setState(() => _avatarIndex = idx),
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? GameColors.lime : GameColors.surface,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isSelected ? GameColors.lime : GameColors.glassBorder,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    _avatarIcons[idx],
+                                    size: 18,
+                                    color: isSelected ? GameColors.background : GameColors.textSecondary,
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Display Name Field
+                          TextField(
+                            controller: _nameController,
+                            style: GameTypography.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                            decoration: InputDecoration(
+                              labelText: 'Display Name',
+                              labelStyle: const TextStyle(color: GameColors.lime),
+                              filled: true,
+                              fillColor: GameColors.surface,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: const BorderSide(color: GameColors.glassBorder),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: const BorderSide(color: GameColors.lime, width: 2),
+                              ),
                             ),
                           ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                    // Display Name Field
-                    TextField(
-                      controller: _nameController,
-                      style: GameTypography.bodyLarge.copyWith(fontWeight: FontWeight.bold),
-                      decoration: InputDecoration(
-                        labelText: 'Display Name',
-                        labelStyle: const TextStyle(color: GameColors.lime),
-                        filled: true,
-                        fillColor: GameColors.surface,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: GameColors.glassBorder),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: GameColors.lime, width: 2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+                          // Stats Dashboard
+                          Text('CAREER STATISTICS', style: GameTypography.caption.copyWith(letterSpacing: 1.2, color: GameColors.lime, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 12),
 
-                    // Stats Dashboard
-                    Text('CAREER STATISTICS', style: GameTypography.caption.copyWith(letterSpacing: 1.2, color: GameColors.lime, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 12),
-
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: GameColors.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: GameColors.glassBorder),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _buildStatItem('MATCHES', '$_matchesPlayed', GameColors.textPrimary),
-                              _buildStatItem('WINS', '$_matchesWon', GameColors.lime),
-                              _buildStatItem('LOSSES', '$_matchesLost', GameColors.wicket),
-                              _buildStatItem('TIED', '$_matchesTied', GameColors.gold),
-                            ],
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: GameColors.surfaceGradient,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: GameColors.glassBorder),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    _buildStatItem('MATCHES', '$_matchesPlayed', GameColors.textPrimary),
+                                    _buildStatItem('WINS', '$_matchesWon', GameColors.lime),
+                                    _buildStatItem('LOSSES', '$_matchesLost', GameColors.wicket),
+                                    _buildStatItem('TIED', '$_matchesTied', GameColors.gold),
+                                  ],
+                                ),
+                                const Divider(color: GameColors.glassBorder, height: 28),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('WIN RATE', style: GameTypography.caption.copyWith(fontWeight: FontWeight.bold)),
+                                    Text('$winRate%', style: GameTypography.headlineMedium.copyWith(color: GameColors.lime)),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                          const Divider(color: GameColors.glassBorder, height: 28),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('WIN RATE', style: GameTypography.caption.copyWith(fontWeight: FontWeight.bold)),
-                              Text('$winRate%', style: GameTypography.headlineMedium.copyWith(color: GameColors.lime)),
-                            ],
+                          const SizedBox(height: 36),
+
+                          SizedBox(
+                            height: 52,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [GameColors.lime, GameColors.cyanBright],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: GameColors.lime.withValues(alpha: 0.3),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: _saveProfile,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  foregroundColor: GameColors.background,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                                child: Text(
+                                  'SAVE PROFILE',
+                                  style: GameTypography.headlineMedium.copyWith(fontSize: 16, color: GameColors.background),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 36),
-
-                    SizedBox(
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: _saveProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: GameColors.lime,
-                          foregroundColor: GameColors.background,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: Text(
-                          'SAVE PROFILE',
-                          style: GameTypography.headlineMedium.copyWith(fontSize: 16, color: GameColors.background),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }

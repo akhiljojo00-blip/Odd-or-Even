@@ -25,6 +25,7 @@ class GameMatchState {
   final BallEvent? lastBallEvent;
   final int? tossP1Choice;
   final int? tossP2Choice;
+  final String? roomId;
 
   const GameMatchState({
     required this.matchId,
@@ -48,18 +49,22 @@ class GameMatchState {
     this.lastBallEvent,
     this.tossP1Choice,
     this.tossP2Choice,
+    this.roomId,
   });
 
   PlayerInfo getPlayerById(String id) {
     if (player1.id == id) return player1;
     if (player2.id == id) return player2;
-    throw ArgumentError('Player ID not found in match: $id');
+    return PlayerInfo(
+      id: id,
+      name: id.length >= 8 ? 'Player ${id.substring(0, 4)}' : (id.isNotEmpty ? id : 'Player'),
+    );
   }
 
   PlayerInfo getOpponentOf(String id) {
     if (player1.id == id) return player2;
     if (player2.id == id) return player1;
-    throw ArgumentError('Player ID not found in match: $id');
+    return player2;
   }
 
   PlayerInfo? get currentBatter =>
@@ -99,6 +104,7 @@ class GameMatchState {
     BallEvent? lastBallEvent,
     int? tossP1Choice,
     int? tossP2Choice,
+    String? roomId,
     bool clearWinner = false,
     bool clearLastBall = false,
     bool clearTossChoices = false,
@@ -125,6 +131,7 @@ class GameMatchState {
       lastBallEvent: clearLastBall ? null : (lastBallEvent ?? this.lastBallEvent),
       tossP1Choice: clearTossChoices ? null : (tossP1Choice ?? this.tossP1Choice),
       tossP2Choice: clearTossChoices ? null : (tossP2Choice ?? this.tossP2Choice),
+      roomId: roomId ?? this.roomId,
     );
   }
 
@@ -149,9 +156,27 @@ class GameMatchState {
         'seriesWinnerId': seriesWinnerId,
         'tossP1Choice': tossP1Choice,
         'tossP2Choice': tossP2Choice,
+        'roomId': roomId,
       };
 
   factory GameMatchState.fromJson(Map<String, dynamic> json) {
+    final parsedBallHistory = () {
+      final raw = json['ballHistory'] as List<dynamic>?;
+      if (raw == null) return const <BallEvent>[];
+      final list = raw.map((e) => BallEvent.fromJson(e as Map<String, dynamic>)).toList();
+      list.sort((a, b) {
+        if (a.inningsNo != b.inningsNo) {
+          return a.inningsNo.compareTo(b.inningsNo);
+        }
+        return a.ballNo.compareTo(b.ballNo);
+      });
+      return list;
+    }();
+
+    final parsedLastBall = json['lastBallEvent'] != null
+        ? BallEvent.fromJson(json['lastBallEvent'] as Map<String, dynamic>)
+        : (parsedBallHistory.isNotEmpty ? parsedBallHistory.last : null);
+
     return GameMatchState(
       matchId: json['matchId'] ?? json['id'] ?? '',
       phase: MatchPhase.fromValue((json['phase'] as String?) ?? 'toss_input'),
@@ -189,15 +214,14 @@ class GameMatchState {
       currentBowlerId: json['currentBowlerId'] ?? json['current_bowler_id'],
       currentInningsRuns: json['currentInningsRuns'] ?? json['current_innings_runs'] ?? 0,
       legalBallsBowled: json['legalBallsBowled'] ?? json['legal_balls_bowled'] ?? 0,
-      ballHistory: (json['ballHistory'] as List<dynamic>?)
-              ?.map((e) => BallEvent.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
+      ballHistory: parsedBallHistory,
+      lastBallEvent: parsedLastBall,
       winnerId: json['winnerId'] ?? json['winner_id'],
       resultType: MatchResultType.fromValue(json['resultType'] ?? json['result_type']),
       seriesWinnerId: json['seriesWinnerId'] ?? json['series_winner_id'],
       tossP1Choice: json['tossP1Choice'] ?? json['toss_p1_choice'],
       tossP2Choice: json['tossP2Choice'] ?? json['toss_p2_choice'],
+      roomId: json['roomId'] ?? json['room_id'],
     );
   }
 }
