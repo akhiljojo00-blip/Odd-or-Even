@@ -64,6 +64,12 @@ class GameColors {
     colors: [Color(0xFFC2410C), Color(0xFFEA580C), Color(0xFFD97706)],
   );
 
+  static const LinearGradient cardGradientVsComputer = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF0369A1), Color(0xFF0284C7), Color(0xFF0EA5E9)],
+  );
+
   static const LinearGradient surfaceGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,

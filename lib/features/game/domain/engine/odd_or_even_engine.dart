@@ -12,8 +12,8 @@ class OddOrEvenEngine {
   static final Random _defaultRandom = Random();
   static const Uuid _uuid = Uuid();
 
-  /// Validates whether a number choice is legally in range 1..10.
-  static bool isValidChoice(int choice) {
+  /// Validates whether a number choice is legally in range 1..maxChoice.
+  static bool isValidChoice(int choice, {int maxChoice = OddOrEvenEngine.maxChoice}) {
     return choice >= minChoice && choice <= maxChoice;
   }
 
@@ -47,8 +47,9 @@ class OddOrEvenEngine {
     required int player1Choice,
     required int player2Choice,
   }) {
-    if (!isValidChoice(player1Choice) || !isValidChoice(player2Choice)) {
-      throw ArgumentError('Toss choices must be between $minChoice and $maxChoice');
+    final max = state.config.maxChoice;
+    if (!isValidChoice(player1Choice, maxChoice: max) || !isValidChoice(player2Choice, maxChoice: max)) {
+      throw ArgumentError('Toss choices must be between $minChoice and $max');
     }
 
     final sum = player1Choice + player2Choice;
@@ -113,8 +114,9 @@ class OddOrEvenEngine {
     required int batterChoice,
     required int bowlerChoice,
   }) {
-    if (!isValidChoice(batterChoice) || !isValidChoice(bowlerChoice)) {
-      throw ArgumentError('Ball numbers must be between $minChoice and $maxChoice');
+    final max = state.config.maxChoice;
+    if (!isValidChoice(batterChoice, maxChoice: max) || !isValidChoice(bowlerChoice, maxChoice: max)) {
+      throw ArgumentError('Ball numbers must be between $minChoice and $max');
     }
     if (!state.phase.isInningsActive) {
       throw StateError('Cannot resolve ball outside of active innings phase');

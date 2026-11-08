@@ -227,6 +227,7 @@ class _OfflineGameplayScreenState extends ConsumerState<OfflineGameplayScreen> {
 
         NumberPad(
           selectedNumber: _stagedNumber,
+          maxNumber: match.config.maxChoice,
           autoModeEnabled: match.config.autoModeEnabled,
           onAutoPick: () {
             setState(() {
@@ -403,6 +404,7 @@ class _OfflineGameplayScreenState extends ConsumerState<OfflineGameplayScreen> {
 
         NumberPad(
           selectedNumber: _stagedNumber,
+          maxNumber: match.config.maxChoice,
           autoModeEnabled: match.config.autoModeEnabled,
           onAutoPick: () {
             setState(() {
