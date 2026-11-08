@@ -37,6 +37,14 @@ class _CountdownTimerBarState extends State<CountdownTimerBar> {
     if (oldWidget.resetKey != widget.resetKey ||
         oldWidget.totalSeconds != widget.totalSeconds) {
       _reset();
+    } else if (oldWidget.isPaused != widget.isPaused) {
+      if (widget.isPaused) {
+        _timer?.cancel();
+      } else {
+        if (_timer == null || !_timer!.isActive) {
+          _startTimer();
+        }
+      }
     }
   }
 

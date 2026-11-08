@@ -198,21 +198,7 @@ class VsComputerGameNotifier extends StateNotifier<VsComputerGameState> {
 
   /// Starts a fresh rematch match keeping cumulative series score.
   void requestRematch() {
-    var rematch = OddOrEvenEngine.initializeRematch(previousState: state.match);
-
-    // If Computer is toss winner on rematch, AI picks role immediately
-    if (rematch.phase == MatchPhase.roleSelection &&
-        rematch.tossWinnerId == state.computerPlayerId) {
-      final aiRole = ComputerPlayerStrategy.selectCricketRole(
-        difficulty: state.difficulty,
-      );
-      rematch = OddOrEvenEngine.selectRole(
-        state: rematch,
-        choosingPlayerId: state.computerPlayerId,
-        chosenRole: aiRole,
-      );
-    }
-
+    final rematch = OddOrEvenEngine.initializeRematch(previousState: state.match);
     state = state.copyWith(
       match: rematch,
       showBallOutcomeOverlay: false,

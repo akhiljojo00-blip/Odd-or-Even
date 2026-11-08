@@ -7,9 +7,11 @@ import '../../../../core/utils/haptics_util.dart';
 import '../../../../core/widgets/creator_footer.dart';
 import '../../../game/domain/models/game_enums.dart';
 import '../../../game/domain/models/game_match_state.dart';
+import '../../../game/presentation/widgets/animated_coin_toss.dart';
 import '../../../game/presentation/widgets/ball_history_strip.dart';
 import '../../../game/presentation/widgets/ball_outcome_dialog.dart';
 import '../../../game/presentation/widgets/countdown_timer_bar.dart';
+import '../../../game/presentation/widgets/match_result_view.dart';
 import '../../../game/presentation/widgets/number_pad.dart';
 import '../../../game/presentation/widgets/player_identity_badge.dart';
 import '../../../game/presentation/widgets/scoreboard_card.dart';
@@ -241,6 +243,11 @@ class _VsComputerGameplayScreenState extends ConsumerState<VsComputerGameplayScr
                     color: GameColors.cyanBright,
                     letterSpacing: 1.2,
                   ),
+                ),
+                const SizedBox(height: 10),
+                AnimatedCoinToss(
+                  outcome: humanParity,
+                  size: 80,
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -533,137 +540,14 @@ class _VsComputerGameplayScreenState extends ConsumerState<VsComputerGameplayScr
     VsComputerGameState vsState,
     VsComputerGameNotifier notifier,
   ) {
-    final isHumanWinner = match.winnerId == 'human';
-    final isTie = match.resultType == MatchResultType.tie;
-
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            gradient: GameColors.surfaceGradient,
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: isHumanWinner
-                  ? GameColors.lime
-                  : (isTie ? GameColors.amber : GameColors.wicket),
-              width: 2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (isHumanWinner ? GameColors.lime : GameColors.wicket).withValues(alpha: 0.25),
-                blurRadius: 28,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isHumanWinner
-                    ? Icons.emoji_events_rounded
-                    : (isTie ? Icons.handshake_rounded : Icons.sentiment_very_dissatisfied_rounded),
-                color: isHumanWinner ? GameColors.goldBright : GameColors.textSecondary,
-                size: 64,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                isHumanWinner
-                    ? 'VICTORY!'
-                    : (isTie ? 'MATCH TIED!' : 'DEFEAT'),
-                style: GameTypography.displayLarge.copyWith(
-                  fontSize: 32,
-                  color: isHumanWinner
-                      ? GameColors.lime
-                      : (isTie ? GameColors.amber : GameColors.wicket),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                match.resultType?.description ?? 'Match Completed',
-                textAlign: TextAlign.center,
-                style: GameTypography.bodyMedium,
-              ),
-              const SizedBox(height: 20),
-
-              // Match score breakdown
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: GameColors.background.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: GameColors.glassBorder),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('1st Innings:', style: GameTypography.bodyMedium),
-                        Text('${match.firstInningsRuns} Runs', style: GameTypography.headlineMedium.copyWith(fontSize: 16)),
-                      ],
-                    ),
-                    const Divider(color: GameColors.glassBorder, height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('2nd Innings:', style: GameTypography.bodyMedium),
-                        Text('${match.currentInningsRuns} Runs', style: GameTypography.headlineMedium.copyWith(fontSize: 16)),
-                      ],
-                    ),
-                    const Divider(color: GameColors.glassBorder, height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Series Wins:', style: GameTypography.bodyMedium),
-                        Text(
-                          'You ${match.player1.seriesScore} - ${match.player2.seriesScore} Computer',
-                          style: GameTypography.headlineMedium.copyWith(
-                            fontSize: 16,
-                            color: GameColors.goldBright,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton.icon(
-                  onPressed: notifier.requestRematch,
-                  icon: const Icon(Icons.replay_rounded),
-                  label: const Text('PLAY REMATCH'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: GameColors.lime,
-                    foregroundColor: GameColors.background,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: OutlinedButton.icon(
-                  onPressed: () => context.go('/'),
-                  icon: const Icon(Icons.home_rounded),
-                  label: const Text('MAIN MENU'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: GameColors.glassBorder),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return MatchResultView(
+      match: match,
+      currentUserId: vsState.humanPlayerId,
+      onRematch: () {
+        setState(() => _timerResetKey = UniqueKey());
+        notifier.requestRematch();
+      },
+      onHome: () => context.go('/'),
     );
   }
 }
