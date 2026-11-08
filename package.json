@@ -1,0 +1,9 @@
+{
+  "name": "odd-or-even",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Odd or Even - Classic Finger Cricket Duel Web Client",
+  "scripts": {
+    "build": "bash ./vercel-build.sh"
+  }
+}

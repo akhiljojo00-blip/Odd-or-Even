@@ -54,3 +54,7 @@ supabase/.temp/
 /screenshots/
 /tool/
 
+# Vercel Flutter SDK cache
+.flutter_sdk/
+
+
