@@ -11,6 +11,7 @@ class NumberPad extends StatefulWidget {
   final bool isSubmitting;
   final bool autoModeEnabled;
   final VoidCallback? onAutoPick;
+  final int maxNumber;
 
   const NumberPad({
     super.key,
@@ -20,6 +21,7 @@ class NumberPad extends StatefulWidget {
     this.isSubmitting = false,
     this.autoModeEnabled = false,
     this.onAutoPick,
+    this.maxNumber = 10,
   });
 
   @override
@@ -41,16 +43,28 @@ class _NumberPadState extends State<NumberPad> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Number grid: 2 rows of 5 numbers (1-5 and 6-10)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [1, 2, 3, 4, 5].map((n) => _buildNumberButton(n, busy)).toList(),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [6, 7, 8, 9, 10].map((n) => _buildNumberButton(n, busy)).toList(),
-        ),
+        // Number grid:
+        if (widget.maxNumber == 6) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [1, 2, 3].map((n) => _buildNumberButton(n, busy)).toList(),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [4, 5, 6].map((n) => _buildNumberButton(n, busy)).toList(),
+          ),
+        ] else ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [1, 2, 3, 4, 5].map((n) => _buildNumberButton(n, busy)).toList(),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [6, 7, 8, 9, 10].map((n) => _buildNumberButton(n, busy)).toList(),
+          ),
+        ],
         const SizedBox(height: 18),
 
         // Action row: Confirm & Auto pick
@@ -151,7 +165,7 @@ class _NumberPadState extends State<NumberPad> {
                                   Text(
                                     widget.selectedNumber != null
                                         ? 'LOCK IN NUMBER ${widget.selectedNumber}'
-                                        : 'SELECT A NUMBER (1 - 10)',
+                                        : 'SELECT A NUMBER (1 - ${widget.maxNumber})',
                                     style: GameTypography.headlineMedium.copyWith(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w900,

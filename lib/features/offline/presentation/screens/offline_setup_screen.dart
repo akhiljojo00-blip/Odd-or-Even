@@ -23,6 +23,7 @@ class _OfflineSetupScreenState extends ConsumerState<OfflineSetupScreen> {
   int? _selectedOvers; // null = unlimited
   int _selectedTimer = 10;
   int _selectedSeriesTarget = 6;
+  int _selectedMaxChoice = 6;
 
   @override
   void dispose() {
@@ -38,6 +39,7 @@ class _OfflineSetupScreenState extends ConsumerState<OfflineSetupScreen> {
       decisionTimerSeconds: _selectedTimer,
       seriesTargetPoints: _selectedSeriesTarget,
       autoModeEnabled: _selectedMode == GameMode.fast,
+      maxChoice: _selectedMaxChoice,
     );
 
     ref.read(offlineGameProvider.notifier).startNewGame(
@@ -82,6 +84,11 @@ class _OfflineSetupScreenState extends ConsumerState<OfflineSetupScreen> {
                     _buildSectionTitle('GAME MODE'),
                     const SizedBox(height: 10),
                     _buildGameModeSelector(),
+                    const SizedBox(height: 24),
+
+                    _buildSectionTitle('NUMBER SELECTION RANGE'),
+                    const SizedBox(height: 10),
+                    _buildNumberRangeSelector(),
                     const SizedBox(height: 24),
 
                     _buildSectionTitle('OVERS PER INNINGS'),
@@ -224,6 +231,30 @@ class _OfflineSetupScreenState extends ConsumerState<OfflineSetupScreen> {
             subtitle: 'Auto-pick enabled',
             isSelected: _selectedMode == GameMode.fast,
             onTap: () => setState(() => _selectedMode = GameMode.fast),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNumberRangeSelector() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildChoiceChip(
+            label: '1 – 6 (DEFAULT)',
+            subtitle: 'Fast arcade duel',
+            isSelected: _selectedMaxChoice == 6,
+            onTap: () => setState(() => _selectedMaxChoice = 6),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildChoiceChip(
+            label: '1 – 10 (CLASSIC)',
+            subtitle: 'Wide range duel',
+            isSelected: _selectedMaxChoice == 10,
+            onTap: () => setState(() => _selectedMaxChoice = 10),
           ),
         ),
       ],

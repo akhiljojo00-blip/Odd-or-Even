@@ -186,9 +186,9 @@ class OfflineGameNotifier extends StateNotifier<OfflineGameState> {
     state = state.copyWith(match: updatedMatch);
   }
 
-  /// Automatically picks a random valid number (1-10) for auto mode.
+  /// Automatically picks a random valid number for auto mode.
   int generateAutoNumber() {
-    return Random().nextInt(10) + 1;
+    return Random().nextInt(state.match.config.maxChoice) + 1;
   }
 
   /// Starts a fresh rematch match keeping series points.

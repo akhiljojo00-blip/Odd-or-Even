@@ -26,7 +26,7 @@ void main() {
     test('Full 2-innings match flow with privacy handoffs and rematch', () {
       // 1. Start match
       notifier.startNewGame(
-        config: const MatchConfig(overs: null, seriesTargetPoints: 2),
+        config: const MatchConfig(overs: null, seriesTargetPoints: 2, maxChoice: 10),
         player1Name: 'Alice',
         player2Name: 'Bob',
       );

@@ -170,6 +170,20 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     _buildArcadeGameCard(
                       context: context,
+                      title: 'VS COMPUTER',
+                      subtitle: 'Single-player offline match with Easy, Medium, or Hard AI',
+                      icon: Icons.smart_toy_outlined,
+                      gradient: GameColors.cardGradientVsComputer,
+                      accentColor: GameColors.cyanBright,
+                      badgeText: 'SOLO AI',
+                      onTap: () {
+                        HapticsUtil.mediumTap();
+                        context.push('/vs-computer-setup');
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildArcadeGameCard(
+                      context: context,
                       title: 'ONLINE ROOMS',
                       subtitle: 'Host or join private matches with 6-character room codes',
                       icon: Icons.meeting_room_rounded,

@@ -12,7 +12,7 @@ void main() {
   group('Ball Resolution & Authoritative Display Regression Tests (Task A)', () {
     const p1 = PlayerInfo(id: 'usr_p1', name: 'Player 1');
     const p2 = PlayerInfo(id: 'usr_p2', name: 'Player 2');
-    const config = MatchConfig(overs: 5, decisionTimerSeconds: 10, seriesTargetPoints: 6);
+    const config = MatchConfig(overs: 5, decisionTimerSeconds: 10, seriesTargetPoints: 6, maxChoice: 10);
 
     GameMatchState setupActiveInnings({required bool p1Batting}) {
       var state = OddOrEvenEngine.initializeMatch(

@@ -137,18 +137,30 @@ class ScoreboardCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(
-                '$currentScore',
-                style: GameTypography.scoreNumber.copyWith(
-                  fontSize: 58,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      color: GameColors.electricViolet.withValues(alpha: 0.6),
-                      blurRadius: 18,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return ScaleTransition(
+                    scale: Tween<double>(begin: 0.85, end: 1.0).animate(
+                      CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
                     ),
-                  ],
+                    child: FadeTransition(opacity: animation, child: child),
+                  );
+                },
+                child: Text(
+                  '$currentScore',
+                  key: ValueKey<int>(currentScore),
+                  style: GameTypography.scoreNumber.copyWith(
+                    fontSize: 58,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: GameColors.electricViolet.withValues(alpha: 0.6),
+                        blurRadius: 18,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -217,11 +229,18 @@ class ScoreboardCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(6),
-                    child: LinearProgressIndicator(
-                      value: chaseProgress,
-                      minHeight: 6,
-                      backgroundColor: Colors.white.withValues(alpha: 0.15),
-                      valueColor: const AlwaysStoppedAnimation<Color>(GameColors.goldBright),
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(begin: 0.0, end: chaseProgress),
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, animatedValue, _) {
+                        return LinearProgressIndicator(
+                          value: animatedValue,
+                          minHeight: 6,
+                          backgroundColor: Colors.white.withValues(alpha: 0.15),
+                          valueColor: const AlwaysStoppedAnimation<Color>(GameColors.goldBright),
+                        );
+                      },
                     ),
                   ),
                 ],

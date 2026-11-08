@@ -178,7 +178,7 @@ void main() {
 
     test('Second innings chase: batter out below target -> Defender Wins', () {
       var state = OddOrEvenEngine.initializeMatch(
-        config: const MatchConfig(overs: null, seriesTargetPoints: 2),
+        config: const MatchConfig(overs: null, seriesTargetPoints: 2, maxChoice: 10),
         player1: playerA,
         player2: playerB,
       );

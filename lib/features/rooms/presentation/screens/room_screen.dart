@@ -252,6 +252,22 @@ class _RoomScreenState extends ConsumerState<RoomScreen> {
                     const SizedBox(height: 10),
 
                     _buildConfigOption(
+                      title: 'NUMBER RANGE',
+                      value: _config.maxChoice == 6 ? '1 – 6 (Default)' : '1 – 10 (Classic)',
+                      icon: Icons.pin_outlined,
+                      onTap: isConfirmedByMe
+                          ? null
+                          : () {
+                              setState(() {
+                                _config = _config.copyWith(
+                                  maxChoice: _config.maxChoice == 6 ? 10 : 6,
+                                );
+                              });
+                            },
+                    ),
+                    const SizedBox(height: 10),
+
+                    _buildConfigOption(
                       title: 'OVERS PER INNINGS',
                       value: _config.overs != null ? '${_config.overs} Overs' : 'Unlimited',
                       icon: Icons.sports_cricket,

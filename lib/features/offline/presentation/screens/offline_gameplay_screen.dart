@@ -202,7 +202,7 @@ class _OfflineGameplayScreenState extends ConsumerState<OfflineGameplayScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Select your secret toss number (1 - 10)',
+                'Select your secret toss number (1 - ${match.config.maxChoice})',
                 style: GameTypography.bodyMedium,
               ),
             ],
@@ -227,6 +227,7 @@ class _OfflineGameplayScreenState extends ConsumerState<OfflineGameplayScreen> {
 
         NumberPad(
           selectedNumber: _stagedNumber,
+          maxNumber: match.config.maxChoice,
           autoModeEnabled: match.config.autoModeEnabled,
           onAutoPick: () {
             setState(() {
@@ -403,6 +404,7 @@ class _OfflineGameplayScreenState extends ConsumerState<OfflineGameplayScreen> {
 
         NumberPad(
           selectedNumber: _stagedNumber,
+          maxNumber: match.config.maxChoice,
           autoModeEnabled: match.config.autoModeEnabled,
           onAutoPick: () {
             setState(() {

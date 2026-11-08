@@ -8,13 +8,14 @@ import '../../../../core/theme/game_typography.dart';
 import '../../../../core/utils/haptics_util.dart';
 import '../../../game/domain/models/game_enums.dart';
 import '../../../game/domain/models/game_match_state.dart';
+import '../../../game/presentation/widgets/animated_coin_toss.dart';
 import '../../../game/presentation/widgets/ball_history_strip.dart';
 import '../../../game/presentation/widgets/ball_outcome_dialog.dart';
 import '../../../game/presentation/widgets/countdown_timer_bar.dart';
+import '../../../game/presentation/widgets/match_result_view.dart';
 import '../../../game/presentation/widgets/number_pad.dart';
 import '../../../game/presentation/widgets/player_identity_badge.dart';
 import '../../../game/presentation/widgets/scoreboard_card.dart';
-import '../../../../core/widgets/creator_footer.dart';
 import '../../data/supabase_match_repository.dart';
 
 class OnlineGameplayScreen extends ConsumerStatefulWidget {
@@ -441,11 +442,16 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
               const Icon(Icons.change_circle_outlined, size: 48, color: GameColors.lime),
               const SizedBox(height: 12),
               Text('SIMULTANEOUS TOSS', style: GameTypography.headlineMedium.copyWith(color: GameColors.lime)),
-              const SizedBox(height: 6),
+              const SizedBox(height: 10),
+              AnimatedCoinToss(
+                outcome: match.player1.id == _currentUserId ? match.player1.parity : match.player2.parity,
+                size: 76,
+              ),
+              const SizedBox(height: 10),
               Text(
                 _hasSubmittedThisTurn
                     ? 'Toss choice submitted! Waiting for opponent...'
-                    : 'Select your secret toss number (1 - 10)',
+                    : 'Select your secret toss number (1 - ${match.config.maxChoice})',
                 textAlign: TextAlign.center,
                 style: GameTypography.bodyMedium,
               ),
@@ -468,9 +474,10 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
         if (!_hasSubmittedThisTurn)
           NumberPad(
             selectedNumber: _stagedNumber,
+            maxNumber: match.config.maxChoice,
             autoModeEnabled: match.config.autoModeEnabled,
             onAutoPick: () {
-              setState(() => _stagedNumber = (1 + (DateTime.now().millisecond % 10)));
+              setState(() => _stagedNumber = (1 + (DateTime.now().millisecond % match.config.maxChoice)));
             },
             onNumberSelected: (v) => setState(() => _stagedNumber = v),
             onConfirm: () {
@@ -669,9 +676,10 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
           const SizedBox(height: 8),
           NumberPad(
             selectedNumber: _stagedNumber,
+            maxNumber: match.config.maxChoice,
             autoModeEnabled: match.config.autoModeEnabled,
             onAutoPick: () {
-              setState(() => _stagedNumber = (1 + (DateTime.now().millisecond % 10)));
+              setState(() => _stagedNumber = (1 + (DateTime.now().millisecond % match.config.maxChoice)));
             },
             onNumberSelected: (v) => setState(() => _stagedNumber = v),
             onConfirm: () {
@@ -731,195 +739,13 @@ class _OnlineGameplayScreenState extends ConsumerState<OnlineGameplayScreen> {
   }
 
   Widget _buildResultsScreen(GameMatchState match) {
-    final isSeriesFinished = match.phase == MatchPhase.seriesFinished;
-    final winner = match.winnerId != null ? match.getPlayerById(match.winnerId!) : null;
-    final isMeWinner = winner?.id == _currentUserId;
-    final isTie = match.resultType == MatchResultType.tie;
-
     return Scaffold(
       backgroundColor: GameColors.background,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: GameColors.arcadeBackgroundGradient,
-        ),
-        child: SafeArea(
-          child: Align(
-            alignment: Alignment.center,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 12),
-                    Center(
-                      child: Container(
-                        width: 96,
-                        height: 96,
-                        decoration: BoxDecoration(
-                          gradient: RadialGradient(
-                            colors: [
-                              (isMeWinner ? GameColors.goldBright : GameColors.electricViolet).withValues(alpha: 0.35),
-                              (isMeWinner ? GameColors.gold : GameColors.royalPurple).withValues(alpha: 0.1),
-                            ],
-                          ),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isMeWinner ? GameColors.goldBright : GameColors.glassBorder,
-                            width: 2.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isMeWinner ? GameColors.gold : GameColors.electricViolet).withValues(alpha: 0.45),
-                              blurRadius: 28,
-                              spreadRadius: 2,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          isTie
-                              ? Icons.handshake_rounded
-                              : (isMeWinner ? Icons.emoji_events_rounded : Icons.sentiment_neutral_rounded),
-                          size: 52,
-                          color: isMeWinner ? GameColors.goldBright : GameColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ShaderMask(
-                      shaderCallback: (bounds) => (isTie
-                              ? const LinearGradient(colors: [Colors.white, Color(0xFFCBD5E1)])
-                              : (isMeWinner ? GameColors.goldGradient : const LinearGradient(colors: [Colors.white, Color(0xFF94A3B8)])))
-                          .createShader(bounds),
-                      child: Text(
-                        isTie ? 'MATCH TIED!' : (isMeWinner ? 'VICTORY!' : 'DEFEAT'),
-                        textAlign: TextAlign.center,
-                        style: GameTypography.displayLarge.copyWith(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      match.resultType?.description ?? 'Match Completed',
-                      textAlign: TextAlign.center,
-                      style: GameTypography.bodyMedium.copyWith(color: GameColors.textSecondary),
-                    ),
-                    const SizedBox(height: 26),
-
-                    // Scorecard summary
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: GameColors.surfaceGradient,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: GameColors.glassBorder),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            blurRadius: 14,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Column(
-                            children: [
-                              Text('1ST INNINGS', style: GameTypography.caption.copyWith(color: GameColors.textMuted, fontSize: 11)),
-                              const SizedBox(height: 4),
-                              Text('${match.firstInningsRuns}', style: GameTypography.scoreNumber.copyWith(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white)),
-                            ],
-                          ),
-                          Container(width: 1, height: 44, color: GameColors.glassBorder),
-                          Column(
-                            children: [
-                              Text('2ND INNINGS', style: GameTypography.caption.copyWith(color: GameColors.textMuted, fontSize: 11)),
-                              const SizedBox(height: 4),
-                              Text('${match.currentInningsRuns}', style: GameTypography.scoreNumber.copyWith(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    if (!isSeriesFinished) ...[
-                      SizedBox(
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            HapticsUtil.mediumTap();
-                            _handleRematch();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            padding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                          child: Ink(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(colors: [Color(0xFF84CC16), Color(0xFF10B981)]),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: GameColors.lime.withValues(alpha: 0.4),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: const Center(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.refresh_rounded, color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'REMATCH',
-                                    style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.8, color: Colors.white, fontSize: 15),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    SizedBox(
-                      height: 50,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          HapticsUtil.lightTap();
-                          context.go('/');
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: GameColors.glassBorder),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: Text(
-                          'RETURN TO MAIN MENU',
-                          style: GameTypography.headlineMedium.copyWith(fontSize: 14, fontWeight: FontWeight.bold, color: GameColors.textPrimary),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const CreatorFooter(padding: EdgeInsets.only(top: 4, bottom: 2)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+      body: MatchResultView(
+        match: match,
+        currentUserId: _currentUserId,
+        onRematch: _handleRematch,
+        onHome: () => context.go('/'),
       ),
     );
   }

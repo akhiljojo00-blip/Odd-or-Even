@@ -6,6 +6,7 @@ class MatchConfig {
   final int decisionTimerSeconds;
   final bool autoModeEnabled;
   final int seriesTargetPoints;
+  final int maxChoice;
 
   const MatchConfig({
     this.gameMode = GameMode.standard,
@@ -13,6 +14,7 @@ class MatchConfig {
     this.decisionTimerSeconds = 10,
     this.autoModeEnabled = false,
     this.seriesTargetPoints = 6,
+    this.maxChoice = 6,
   });
 
   int? get maxBalls => overs != null ? overs! * 6 : null;
@@ -24,6 +26,7 @@ class MatchConfig {
     int? decisionTimerSeconds,
     bool? autoModeEnabled,
     int? seriesTargetPoints,
+    int? maxChoice,
   }) {
     return MatchConfig(
       gameMode: gameMode ?? this.gameMode,
@@ -31,6 +34,7 @@ class MatchConfig {
       decisionTimerSeconds: decisionTimerSeconds ?? this.decisionTimerSeconds,
       autoModeEnabled: autoModeEnabled ?? this.autoModeEnabled,
       seriesTargetPoints: seriesTargetPoints ?? this.seriesTargetPoints,
+      maxChoice: maxChoice ?? this.maxChoice,
     );
   }
 
@@ -40,6 +44,7 @@ class MatchConfig {
         'decisionTimerSeconds': decisionTimerSeconds,
         'autoModeEnabled': autoModeEnabled,
         'seriesTargetPoints': seriesTargetPoints,
+        'maxChoice': maxChoice,
       };
 
   factory MatchConfig.fromJson(Map<String, dynamic> json) {
@@ -49,6 +54,8 @@ class MatchConfig {
       decisionTimerSeconds: json['decisionTimerSeconds'] as int? ?? 10,
       autoModeEnabled: json['autoModeEnabled'] as bool? ?? false,
       seriesTargetPoints: json['seriesTargetPoints'] as int? ?? 6,
+      // CRITICAL BACKWARD COMPATIBILITY: Legacy serialized MatchConfig data without maxChoice must deserialize with maxChoice = 10.
+      maxChoice: json['maxChoice'] as int? ?? 10,
     );
   }
 }
