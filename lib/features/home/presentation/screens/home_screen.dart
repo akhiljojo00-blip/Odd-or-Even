@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/game_colors.dart';
 import '../../../../core/theme/game_typography.dart';
 import '../../../../core/utils/haptics_util.dart';
@@ -27,6 +28,35 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (AppConfig.isStaging) ...[
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE65100).withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFFF9800), width: 1.2),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.science_outlined, color: Color(0xFFFF9800), size: 18),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                'STAGING ENVIRONMENT (hywownmlimseyboraosl)',
+                                overflow: TextOverflow.ellipsis,
+                                style: GameTypography.caption.copyWith(
+                                  color: const Color(0xFFFF9800),
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     // Top Bar with Status Badge & Header Action Icons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -92,6 +122,15 @@ class HomeScreen extends StatelessWidget {
                               onPressed: () {
                                 HapticsUtil.lightTap();
                                 context.push('/history');
+                              },
+                            ),
+                            const SizedBox(width: 8),
+                            _buildGlassIconButton(
+                              icon: Icons.emoji_events_outlined,
+                              tooltip: 'Leaderboard',
+                              onPressed: () {
+                                HapticsUtil.lightTap();
+                                context.push('/ranked-leaderboard');
                               },
                             ),
                             const SizedBox(width: 8),
@@ -184,6 +223,24 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     _buildArcadeGameCard(
                       context: context,
+                      title: 'VS COMPUTER RANKED',
+                      subtitle: 'Competitive solo ladder with progressive 10-tier AI & star progression',
+                      icon: Icons.military_tech_rounded,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF7C3AED), Color(0xFFD97706), Color(0xFFF59E0B)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      accentColor: GameColors.goldMetallic,
+                      badgeText: 'RANKED',
+                      onTap: () {
+                        HapticsUtil.mediumTap();
+                        context.push('/vs-computer-ranked-setup');
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildArcadeGameCard(
+                      context: context,
                       title: 'ONLINE ROOMS',
                       subtitle: 'Host or join private matches with 6-character room codes',
                       icon: Icons.meeting_room_rounded,
@@ -193,6 +250,24 @@ class HomeScreen extends StatelessWidget {
                       onTap: () {
                         HapticsUtil.mediumTap();
                         context.push('/online-lobby');
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildArcadeGameCard(
+                      context: context,
+                      title: 'ONLINE RANKED',
+                      subtitle: 'Competitive online ladder with MMR matchmaking, stars & 10 tiers',
+                      icon: Icons.workspace_premium_rounded,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF4F46E5), Color(0xFF9333EA), Color(0xFFD97706)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      accentColor: GameColors.goldBright,
+                      badgeText: 'ONLINE LADDER',
+                      onTap: () {
+                        HapticsUtil.mediumTap();
+                        context.push('/ranked-matchmaking');
                       },
                     ),
                     const SizedBox(height: 12),
@@ -317,13 +392,16 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          title,
-                          style: GameTypography.headlineMedium.copyWith(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.8,
-                            color: Colors.white,
+                        Flexible(
+                          child: Text(
+                            title,
+                            overflow: TextOverflow.ellipsis,
+                            style: GameTypography.headlineMedium.copyWith(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),

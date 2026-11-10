@@ -11,11 +11,16 @@ import '../features/offline/presentation/screens/offline_result_screen.dart';
 import '../features/offline/presentation/screens/offline_setup_screen.dart';
 import '../features/online/presentation/screens/online_gameplay_screen.dart';
 import '../features/online/presentation/screens/online_lobby_screen.dart';
+import '../features/online/presentation/screens/ranked_gameplay_screen.dart';
+import '../features/online/presentation/screens/ranked_leaderboard_screen.dart';
+import '../features/online/presentation/screens/ranked_matchmaking_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/rooms/presentation/screens/room_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/vs_computer/presentation/screens/vs_computer_gameplay_screen.dart';
 import '../features/vs_computer/presentation/screens/vs_computer_setup_screen.dart';
+import '../features/progression/presentation/screens/vs_computer_ranked_gameplay_screen.dart';
+import '../features/progression/presentation/screens/vs_computer_ranked_setup_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -45,12 +50,35 @@ final appRouter = GoRouter(
       builder: (context, state) => const VsComputerGameplayScreen(),
     ),
     GoRoute(
+      path: '/vs-computer-ranked-setup',
+      builder: (context, state) => const VsComputerRankedSetupScreen(),
+    ),
+    GoRoute(
+      path: '/vs-computer-ranked-play',
+      builder: (context, state) => const VsComputerRankedGameplayScreen(),
+    ),
+    GoRoute(
       path: '/online-lobby',
       builder: (context, state) => const OnlineLobbyScreen(),
     ),
     GoRoute(
       path: '/matchmaking',
       builder: (context, state) => const MatchmakingScreen(),
+    ),
+    GoRoute(
+      path: '/ranked-matchmaking',
+      builder: (context, state) => const RankedMatchmakingScreen(),
+    ),
+    GoRoute(
+      path: '/ranked-leaderboard',
+      builder: (context, state) => const RankedLeaderboardScreen(),
+    ),
+    GoRoute(
+      path: '/ranked-play/:id',
+      builder: (context, state) {
+        final matchId = state.pathParameters['id'] ?? '';
+        return RankedGameplayScreen(matchId: matchId);
+      },
     ),
     GoRoute(
       path: '/room/:id',

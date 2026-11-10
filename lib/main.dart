@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/config/app_config.dart';
 import 'app/router.dart';
 import 'core/theme/game_theme.dart';
 
@@ -8,8 +9,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Supabase if credentials are provided via dart-define
-  const supabaseUrl = String.fromEnvironment('SUPABASE_URL', defaultValue: '');
-  const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
+  const supabaseUrl = AppConfig.supabaseUrl;
+  const supabaseAnonKey = AppConfig.supabaseAnonKey;
 
   if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
     try {
@@ -35,10 +36,19 @@ class OddOrEvenApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Odd or Even',
+      title: AppConfig.isStaging ? 'Odd or Even [STAGING]' : 'Odd or Even',
       debugShowCheckedModeBanner: false,
       theme: GameTheme.darkTheme,
       routerConfig: appRouter,
+      builder: (context, child) {
+        if (!AppConfig.isStaging) return child ?? const SizedBox.shrink();
+        return Banner(
+          message: 'STAGING',
+          location: BannerLocation.topEnd,
+          color: const Color(0xFFFF9800),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

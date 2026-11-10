@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Permissions required for online multiplayer and Supabase connectivity -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="odd_or_even"
         android:name="${applicationName}"

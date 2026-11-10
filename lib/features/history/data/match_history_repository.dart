@@ -12,6 +12,7 @@ class MatchHistoryRecord {
   final String? winnerName;
   final String resultSummary;
   final DateTime playedAt;
+  final String? gameMode;
 
   const MatchHistoryRecord({
     required this.matchId,
@@ -22,7 +23,28 @@ class MatchHistoryRecord {
     this.winnerName,
     required this.resultSummary,
     required this.playedAt,
+    this.gameMode,
   });
+
+  /// Readable badge label for game mode.
+  String get modeLabel {
+    if (gameMode != null && gameMode!.isNotEmpty) {
+      return gameMode!;
+    }
+    if (player2Name.contains('AI') || matchId.contains('ranked')) {
+      return 'VS Computer Ranked';
+    }
+    if (player2Name.contains('Computer') ||
+        player2Name.contains('Easy') ||
+        player2Name.contains('Medium') ||
+        player2Name.contains('Hard')) {
+      return 'VS Computer (Casual)';
+    }
+    if (matchId.contains('room') || matchId.contains('online')) {
+      return 'Online Match';
+    }
+    return 'Pass & Play';
+  }
 
   Map<String, dynamic> toJson() => {
         'matchId': matchId,
@@ -33,6 +55,7 @@ class MatchHistoryRecord {
         'winnerName': winnerName,
         'resultSummary': resultSummary,
         'playedAt': playedAt.toIso8601String(),
+        'gameMode': gameMode,
       };
 
   factory MatchHistoryRecord.fromJson(Map<String, dynamic> json) {
@@ -45,6 +68,7 @@ class MatchHistoryRecord {
       winnerName: json['winnerName'] as String?,
       resultSummary: json['resultSummary'] as String,
       playedAt: DateTime.parse(json['playedAt'] as String),
+      gameMode: json['gameMode'] as String?,
     );
   }
 }
@@ -76,6 +100,20 @@ class MatchHistoryRepository {
 
       final summary = match.resultType?.description ?? 'Match Complete';
 
+      final inferredMode = () {
+        if (match.roomId != null && match.roomId!.isNotEmpty) return 'Online Match';
+        if (match.player2.name.contains('AI') || match.matchId.contains('ranked')) {
+          return 'VS Computer Ranked';
+        }
+        if (match.player2.name.contains('Computer') ||
+            match.player2.name.contains('Easy') ||
+            match.player2.name.contains('Medium') ||
+            match.player2.name.contains('Hard')) {
+          return 'VS Computer (Casual)';
+        }
+        return 'Pass & Play';
+      }();
+
       final record = MatchHistoryRecord(
         matchId: match.matchId,
         player1Name: match.player1.name,
@@ -85,6 +123,7 @@ class MatchHistoryRepository {
         winnerName: winnerName,
         resultSummary: summary,
         playedAt: DateTime.now(),
+        gameMode: inferredMode,
       );
 
       currentList.insert(0, jsonEncode(record.toJson()));

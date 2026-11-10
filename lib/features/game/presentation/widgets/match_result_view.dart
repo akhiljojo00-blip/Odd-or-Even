@@ -17,6 +17,7 @@ class MatchResultView extends StatefulWidget {
   final VoidCallback onHome;
   final bool isRematchSubmitting;
   final String? rematchStatusText;
+  final Widget? progressionCard;
 
   const MatchResultView({
     super.key,
@@ -26,6 +27,7 @@ class MatchResultView extends StatefulWidget {
     required this.onHome,
     this.isRematchSubmitting = false,
     this.rematchStatusText,
+    this.progressionCard,
   });
 
   @override
@@ -235,6 +237,10 @@ class _MatchResultViewState extends State<MatchResultView>
 
                       // Match Scoreboard Summary Card
                       _buildScoreboardSummary(match),
+                      if (widget.progressionCard != null) ...[
+                        const SizedBox(height: 16),
+                        widget.progressionCard!,
+                      ],
                       const SizedBox(height: 24),
 
                       // Rematch Button
